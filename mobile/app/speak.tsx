@@ -9,6 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useUser } from "../hooks/useUser";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
@@ -186,14 +187,14 @@ export default function SpeakScreen() {
               style={styles.iconButton}
               accessibilityLabel="View history"
             >
-              <Text style={styles.iconText}>☰</Text>
+              <Ionicons name="menu" size={24} color={COLORS.text} />
             </Pressable>
             <Pressable
               onPress={navigateToSettings}
               style={styles.iconButton}
               accessibilityLabel="Open settings"
             >
-              <Text style={styles.iconText}>⚙</Text>
+              <Ionicons name="settings-outline" size={24} color={COLORS.text} />
             </Pressable>
           </View>
         </View>
