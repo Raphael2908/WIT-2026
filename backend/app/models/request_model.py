@@ -53,3 +53,28 @@ class CalibrationResponse(BaseModel):
         default_factory=dict, description="Detected phoneme patterns"
     )
     message: str = "Calibration complete"
+
+
+class RecognitionResponse(BaseModel):
+    """Response model for recognition endpoint."""
+
+    text: str = Field(..., description="Corrected transcription text")
+    audio_url: Optional[str] = Field(
+        default=None, description="URL to generated TTS audio"
+    )
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Recognition confidence")
+    needs_review: bool = Field(
+        default=False, description="Whether the result needs user review"
+    )
+    sources_used: list[str] = Field(
+        default_factory=list, description="Input sources used (audio, lip_reading, gesture)"
+    )
+    category: str = Field(..., description="User impairment category")
+
+
+class CorrectionResponse(BaseModel):
+    """Response model for correction endpoint."""
+
+    status: str = "success"
+    patterns_learned: int = Field(..., description="Number of new patterns learned")
+    message: str = "Correction logged"
