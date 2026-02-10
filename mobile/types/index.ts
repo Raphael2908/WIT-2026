@@ -124,3 +124,23 @@ export interface DecodeHistoryEntry {
   corrected_text: string | null;
   created_at: string;
 }
+
+// === Quick Phrases (AAC) ===
+
+export interface QuickPhrase {
+  id: string;
+  text: string;
+  category: PhraseCategory;
+  isCustom: boolean;
+  isFavorite: boolean;
+  usageCount: number;
+}
+
+export type PhraseCategory =
+  | "recent"
+  | "favorites"
+  | "essentials"
+  | "greetings"
+  | "needs"
+  | "responses"
+  | "emergency";

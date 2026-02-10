@@ -45,6 +45,23 @@ export const API_ROUTES = {
   FEEDBACK_HISTORY: (id: string) => `/feedback/${id}/history`,
 };
 
+// Default AAC phrases by category
+export const DEFAULT_PHRASES: Record<string, string[]> = {
+  essentials: ["Yes", "No", "Maybe", "Please", "Thank you", "Sorry", "Help"],
+  greetings: ["Hello", "Hi", "Good morning", "Goodbye", "See you later", "How are you?"],
+  needs: [
+    "I need water", "I need help", "I'm hungry", "I'm tired",
+    "I need a break", "I'm in pain", "I need the bathroom",
+  ],
+  responses: [
+    "I agree", "I don't agree", "I don't know", "Can you repeat that?",
+    "Give me a moment", "I'm thinking", "That's fine",
+  ],
+  emergency: [
+    "I need help now", "Call someone", "I'm not okay", "I need my medication",
+  ],
+};
+
 // Demo mode
 export const DEMO_MODE = true;
 

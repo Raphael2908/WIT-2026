@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import * as Speech from "expo-speech";
+import { Ionicons } from "@expo/vector-icons";
 import { COLORS, RADII } from "../utils/theme";
 
 interface DecodedTextDisplayProps {
@@ -9,6 +10,7 @@ interface DecodedTextDisplayProps {
   rawWhisper: string | null;
   status: "idle" | "listening" | "decoding" | "result";
   speakAloud: boolean;
+  onShowText?: () => void;
 }
 
 export default function DecodedTextDisplay({
@@ -17,6 +19,7 @@ export default function DecodedTextDisplay({
   rawWhisper,
   status,
   speakAloud,
+  onShowText,
 }: DecodedTextDisplayProps) {
   const [dots, setDots] = useState(".");
 
@@ -38,6 +41,12 @@ export default function DecodedTextDisplay({
       Speech.speak(decodedText);
     }
   }, [speakAloud, status, decodedText]);
+
+  const handleSpeakAloud = () => {
+    if (decodedText) {
+      Speech.speak(decodedText);
+    }
+  };
 
   return (
     <View style={styles.container} accessibilityLiveRegion="polite">
@@ -66,6 +75,28 @@ export default function DecodedTextDisplay({
           )}
           {rawWhisper && (
             <Text style={styles.rawWhisper}>{rawWhisper}</Text>
+          )}
+          {decodedText && (
+            <View style={styles.actionRow}>
+              <Pressable
+                onPress={handleSpeakAloud}
+                style={styles.actionButton}
+                accessibilityLabel="Speak aloud"
+                accessibilityRole="button"
+              >
+                <Ionicons name="volume-high" size={20} color={COLORS.accent} />
+                <Text style={styles.actionText}>Speak</Text>
+              </Pressable>
+              <Pressable
+                onPress={onShowText}
+                style={styles.actionButton}
+                accessibilityLabel="Show text to someone"
+                accessibilityRole="button"
+              >
+                <Ionicons name="phone-portrait-outline" size={20} color={COLORS.accent} />
+                <Text style={styles.actionText}>Show</Text>
+              </Pressable>
+            </View>
           )}
         </>
       )}
@@ -126,5 +157,25 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontStyle: "italic",
     textAlign: "center",
+  },
+  actionRow: {
+    flexDirection: "row",
+    gap: 20,
+    marginTop: 12,
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: RADII.full,
+    backgroundColor: COLORS.surfaceAlt,
+    minHeight: 40,
+  },
+  actionText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.accent,
   },
 });

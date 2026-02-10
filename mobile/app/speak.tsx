@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,10 +11,17 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as Speech from "expo-speech";
 import { useUser } from "../hooks/useUser";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
 import { useVideoRecorder } from "../hooks/useVideoRecorder";
 import { api } from "../services/api";
+import {
+  getSavedPhrases,
+  savePhrases,
+  getRecentPhrases,
+  addRecentPhrase,
+} from "../services/storage";
 import { API_ROUTES } from "../utils/constants";
 import { COLORS, RADII } from "../utils/theme";
 import SpeakButton from "../components/SpeakButton";
@@ -23,9 +30,12 @@ import FeedbackBar from "../components/FeedbackBar";
 import ModalityIndicator from "../components/ModalityIndicator";
 import WaveformVisualizer from "../components/WaveformVisualizer";
 import MiniCameraPreview from "../components/MiniCameraPreview";
-import type { DecodeResult, FeedbackPayload } from "../types";
+import QuickPhraseBoard from "../components/QuickPhraseBoard";
+import ShowTextModal from "../components/ShowTextModal";
+import type { DecodeResult, FeedbackPayload, QuickPhrase } from "../types";
 
 type DecodeStatus = "idle" | "listening" | "decoding" | "result";
+type ResultSource = "decode" | "quick_phrase";
 
 export default function SpeakScreen() {
   const router = useRouter();
@@ -38,11 +48,87 @@ export default function SpeakScreen() {
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Quick phrase state
+  const [quickPhraseText, setQuickPhraseText] = useState<string | null>(null);
+  const [resultSource, setResultSource] = useState<ResultSource>("decode");
+  const [savedPhrases, setSavedPhrases] = useState<QuickPhrase[]>([]);
+  const [recentPhrases, setRecentPhrases] = useState<string[]>([]);
+  const [showTextModalVisible, setShowTextModalVisible] = useState(false);
+
+  // Load saved/recent phrases on mount
+  useEffect(() => {
+    const loadPhrases = async () => {
+      const [saved, recent] = await Promise.all([
+        getSavedPhrases(),
+        getRecentPhrases(),
+      ]);
+      setSavedPhrases(saved);
+      setRecentPhrases(recent);
+    };
+    loadPhrases();
+  }, []);
+
   useEffect(() => {
     if (audioError) {
       Alert.alert("Audio Error", audioError);
     }
   }, [audioError]);
+
+  const currentDisplayText =
+    resultSource === "quick_phrase"
+      ? quickPhraseText
+      : lastResult?.decoded_text || null;
+
+  const currentRawWhisper =
+    resultSource === "quick_phrase"
+      ? null
+      : lastResult?.raw_whisper || null;
+
+  const handlePhraseSelect = useCallback(async (text: string) => {
+    setQuickPhraseText(text);
+    setResultSource("quick_phrase");
+    setDecodeStatus("result");
+    setLastResult(null);
+    setFeedbackVisible(false);
+
+    Speech.speak(text);
+    await addRecentPhrase(text);
+    setRecentPhrases((prev) => [text, ...prev.filter((p) => p !== text)].slice(0, 20));
+  }, []);
+
+  const handleShowText = useCallback(() => {
+    if (currentDisplayText) {
+      setShowTextModalVisible(true);
+    }
+  }, [currentDisplayText]);
+
+  const handleSavePhraseToFavorites = useCallback(async () => {
+    const text = currentDisplayText;
+    if (!text) return;
+
+    const existing = savedPhrases.find((p) => p.text === text);
+    if (existing) return;
+
+    const newPhrase: QuickPhrase = {
+      id: `custom-${Date.now()}`,
+      text,
+      category: "favorites",
+      isCustom: true,
+      isFavorite: true,
+      usageCount: 1,
+    };
+    const updated = [...savedPhrases, newPhrase];
+    setSavedPhrases(updated);
+    await savePhrases(updated);
+  }, [currentDisplayText, savedPhrases]);
+
+  const handleToggleFavorite = useCallback(async (phraseId: string) => {
+    const updated = savedPhrases.map((p) =>
+      p.id === phraseId ? { ...p, isFavorite: !p.isFavorite } : p
+    );
+    setSavedPhrases(updated);
+    await savePhrases(updated);
+  }, [savedPhrases]);
 
   const handleSpeakStart = async () => {
     if (!user) return;
@@ -50,6 +136,8 @@ export default function SpeakScreen() {
     try {
       setDecodeStatus("listening");
       setLastResult(null);
+      setQuickPhraseText(null);
+      setResultSource("decode");
       setFeedbackVisible(false);
 
       await Promise.all([
@@ -92,8 +180,15 @@ export default function SpeakScreen() {
       );
 
       setLastResult(result);
+      setResultSource("decode");
       setDecodeStatus("result");
       setFeedbackVisible(true);
+
+      // Add decoded text to recent phrases
+      await addRecentPhrase(result.decoded_text);
+      setRecentPhrases((prev) =>
+        [result.decoded_text, ...prev.filter((p) => p !== result.decoded_text)].slice(0, 20)
+      );
     } catch (error) {
       console.error("Error decoding:", error);
       Alert.alert("Decode Error", "Failed to decode speech. Please try again.");
@@ -204,20 +299,39 @@ export default function SpeakScreen() {
           {/* Decoded text card */}
           <View style={styles.textDisplayContainer}>
             <DecodedTextDisplay
-              decodedText={lastResult?.decoded_text || null}
+              decodedText={currentDisplayText}
               partialText={null}
-              rawWhisper={lastResult?.raw_whisper || null}
+              rawWhisper={currentRawWhisper}
               status={decodeStatus}
-              speakAloud={shouldSpeakAloud}
+              speakAloud={shouldSpeakAloud && resultSource === "decode"}
+              onShowText={handleShowText}
             />
           </View>
 
-          {/* Modality indicator */}
-          <View style={styles.modalityContainer}>
-            <ModalityIndicator
-              weights={lastResult?.modality_weights || user.modality_weights}
-              audioActive={true}
-              lipActive={lastResult?.lip_reading_used ?? true}
+          {/* Modality indicator — only show for decoded results */}
+          {resultSource === "decode" && (
+            <View style={styles.modalityContainer}>
+              <ModalityIndicator
+                weights={lastResult?.modality_weights || user.modality_weights}
+                audioActive={true}
+                lipActive={lastResult?.lip_reading_used ?? true}
+              />
+            </View>
+          )}
+          {resultSource === "quick_phrase" && decodeStatus === "result" && (
+            <View style={styles.quickPhraseIndicator}>
+              <Ionicons name="chatbubble-ellipses-outline" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.quickPhraseLabel}>Quick Phrase</Text>
+            </View>
+          )}
+
+          {/* Quick Phrase Board */}
+          <View style={styles.phraseBoardContainer}>
+            <QuickPhraseBoard
+              onPhraseSelect={handlePhraseSelect}
+              recentPhrases={recentPhrases}
+              savedPhrases={savedPhrases}
+              onToggleFavorite={handleToggleFavorite}
             />
           </View>
         </View>
@@ -238,18 +352,26 @@ export default function SpeakScreen() {
           </View>
         </View>
 
-        {/* Feedback bar */}
-        {feedbackVisible && (
+        {/* Feedback bar — only for decoded results */}
+        {feedbackVisible && resultSource === "decode" && (
           <View style={styles.feedbackContainer}>
             <FeedbackBar
               onConfirm={handleConfirm}
               onEdit={() => {}}
+              onSave={handleSavePhraseToFavorites}
               visible={feedbackVisible}
               initialText={lastResult?.decoded_text || ""}
               onSubmitEdit={handleEdit}
             />
           </View>
         )}
+
+        {/* Show Text Modal */}
+        <ShowTextModal
+          text={currentDisplayText || ""}
+          visible={showTextModalVisible}
+          onClose={() => setShowTextModalVisible(false)}
+        />
       </SafeAreaView>
     </LinearGradient>
   );
@@ -296,18 +418,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  iconText: {
-    fontSize: 20,
-    color: COLORS.accent,
-  },
   middleContent: {
     flex: 1,
     paddingHorizontal: 20,
   },
   textDisplayContainer: {
-    marginBottom: 20,
+    marginBottom: 12,
   },
   modalityContainer: {
+    marginBottom: 8,
+  },
+  quickPhraseIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginBottom: 8,
+    paddingVertical: 4,
+  },
+  quickPhraseLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: "500",
+  },
+  phraseBoardContainer: {
     marginBottom: 8,
   },
   bottomSection: {

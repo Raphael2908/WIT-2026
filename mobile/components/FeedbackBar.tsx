@@ -10,11 +10,13 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADII } from '../utils/theme';
 
 interface FeedbackBarProps {
   onConfirm: () => void;
   onEdit: () => void;
+  onSave?: () => void;
   visible: boolean;
   initialText?: string;
   onSubmitEdit?: (correctedText: string) => void;
@@ -23,6 +25,7 @@ interface FeedbackBarProps {
 export default function FeedbackBar({
   onConfirm,
   onEdit,
+  onSave,
   visible,
   initialText = '',
   onSubmitEdit,
@@ -30,6 +33,7 @@ export default function FeedbackBar({
   const slideAnim = useRef(new Animated.Value(100)).current;
   const [modalVisible, setModalVisible] = useState(false);
   const [editedText, setEditedText] = useState(initialText);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     Animated.spring(slideAnim, {
@@ -41,6 +45,7 @@ export default function FeedbackBar({
 
   useEffect(() => {
     setEditedText(initialText);
+    setSaved(false);
   }, [initialText]);
 
   const handleEditPress = () => {
@@ -77,6 +82,27 @@ export default function FeedbackBar({
           accessibilityRole="button"
         >
           <Text style={styles.buttonText}>Correct</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => {
+            if (onSave && !saved) {
+              onSave();
+              setSaved(true);
+            }
+          }}
+          style={[styles.button, styles.saveButton, saved && styles.saveButtonDone]}
+          accessibilityLabel={saved ? "Phrase saved" : "Save phrase to favorites"}
+          accessibilityRole="button"
+          disabled={saved}
+        >
+          <Ionicons
+            name={saved ? "bookmark" : "bookmark-outline"}
+            size={18}
+            color={COLORS.buttonText}
+            style={styles.saveIcon}
+          />
+          <Text style={styles.buttonText}>{saved ? "Saved!" : "Save"}</Text>
         </Pressable>
 
         <Pressable
@@ -166,6 +192,16 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     backgroundColor: COLORS.success,
+  },
+  saveButton: {
+    backgroundColor: COLORS.accentAlt,
+    flexDirection: 'row',
+  },
+  saveButtonDone: {
+    opacity: 0.7,
+  },
+  saveIcon: {
+    marginRight: 4,
   },
   editButton: {
     backgroundColor: COLORS.accent,
