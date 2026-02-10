@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     whisper_api_key: str = ""
     claude_api_key: str = ""
     whisper_model: str = "whisper-1"
+    claude_model: str = "claude-sonnet-4-5-20250929"
     whisper_language: str = "en"
     temp_audio_dir: str = "temp_audio"
     users_dir: str = "users"
