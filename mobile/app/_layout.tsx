@@ -1,8 +1,15 @@
 import { Stack } from "expo-router";
+import { COLORS } from "../utils/theme";
 
 export default function RootLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        headerStyle: { backgroundColor: COLORS.gradientStart },
+        headerTintColor: COLORS.text,
+      }}
+    >
       <Stack.Screen name="index" />
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="calibration" />

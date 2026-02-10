@@ -9,10 +9,12 @@ import {
   SafeAreaView,
   Alert,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Camera } from "expo-camera";
 import { Audio } from "expo-av";
 import { useUser } from "../hooks/useUser";
+import { COLORS, RADII } from "../utils/theme";
 import {
   VISION_IMPAIRMENT_OPTIONS,
   SPEECH_IMPAIRMENT_OPTIONS,
@@ -136,7 +138,7 @@ export default function OnboardingScreen() {
         value={displayName}
         onChangeText={setDisplayName}
         placeholder="Enter your name"
-        placeholderTextColor="#999"
+        placeholderTextColor={COLORS.inactive}
         autoFocus
         accessibilityLabel="Display name input"
       />
@@ -185,7 +187,7 @@ export default function OnboardingScreen() {
           >
             <Text style={styles.optionText}>{option.label}</Text>
             {visionImpairmentHint === option.value && (
-              <Text style={styles.checkMark}>✓</Text>
+              <View style={styles.checkDot} />
             )}
           </TouchableOpacity>
         ))}
@@ -233,7 +235,7 @@ export default function OnboardingScreen() {
           >
             <Text style={styles.optionText}>{option.label}</Text>
             {speechImpairmentHint === option.value && (
-              <Text style={styles.checkMark}>✓</Text>
+              <View style={styles.checkDot} />
             )}
           </TouchableOpacity>
         ))}
@@ -264,15 +266,19 @@ export default function OnboardingScreen() {
         <Text style={styles.title}>We need your permission</Text>
         <View style={styles.permissionContainer}>
           <View style={styles.permissionCard}>
-            <Text style={styles.permissionIcon}>🎤</Text>
+            <View style={styles.permissionIconContainer}>
+              <Text style={styles.permissionLabel}>Microphone</Text>
+            </View>
             <View style={styles.permissionTextContainer}>
-              <Text style={styles.permissionTitle}>Microphone</Text>
               <Text style={styles.permissionDescription}>
                 Required for speech recording
               </Text>
             </View>
             {micPermission === "granted" ? (
-              <Text style={styles.grantedText}>Granted ✓</Text>
+              <View style={styles.grantedContainer}>
+                <View style={styles.grantedDot} />
+                <Text style={styles.grantedText}>Granted</Text>
+              </View>
             ) : (
               <TouchableOpacity
                 style={styles.permissionButton}
@@ -285,15 +291,19 @@ export default function OnboardingScreen() {
           </View>
 
           <View style={styles.permissionCard}>
-            <Text style={styles.permissionIcon}>📷</Text>
+            <View style={styles.permissionIconContainer}>
+              <Text style={styles.permissionLabel}>Camera</Text>
+            </View>
             <View style={styles.permissionTextContainer}>
-              <Text style={styles.permissionTitle}>Camera</Text>
               <Text style={styles.permissionDescription}>
                 Required for lip reading
               </Text>
             </View>
             {cameraPermission === "granted" ? (
-              <Text style={styles.grantedText}>Granted ✓</Text>
+              <View style={styles.grantedContainer}>
+                <View style={styles.grantedDot} />
+                <Text style={styles.grantedText}>Granted</Text>
+              </View>
             ) : (
               <TouchableOpacity
                 style={styles.permissionButton}
@@ -371,22 +381,26 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {renderStepIndicator()}
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
-        {renderCurrentStep()}
-      </ScrollView>
-    </SafeAreaView>
+    <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientEnd]} style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
+        {renderStepIndicator()}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          {renderCurrentStep()}
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
   scrollContent: {
     flexGrow: 1,
@@ -405,12 +419,12 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: "#CCCCCC",
+    borderColor: COLORS.inactive,
     backgroundColor: "transparent",
   },
   stepDotActive: {
-    backgroundColor: "#4A90D9",
-    borderColor: "#4A90D9",
+    backgroundColor: COLORS.accent,
+    borderColor: COLORS.accent,
   },
   stepContainer: {
     flex: 1,
@@ -419,20 +433,20 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#000000",
+    fontWeight: "700",
+    color: COLORS.text,
     marginBottom: 16,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: "#666666",
+    color: COLORS.textSecondary,
     marginBottom: 24,
     textAlign: "center",
   },
   paragraph: {
     fontSize: 18,
-    color: "#333333",
+    color: COLORS.text,
     lineHeight: 28,
     marginBottom: 32,
     textAlign: "center",
@@ -440,13 +454,13 @@ const styles = StyleSheet.create({
   textInput: {
     height: 56,
     borderWidth: 2,
-    borderColor: "#CCCCCC",
-    borderRadius: 12,
+    borderColor: COLORS.border,
+    borderRadius: RADII.md,
     paddingHorizontal: 16,
     fontSize: 20,
-    color: "#000000",
+    color: COLORS.text,
     marginBottom: 32,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: COLORS.surface,
   },
   optionsContainer: {
     marginBottom: 32,
@@ -460,23 +474,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderWidth: 2,
-    borderColor: "#CCCCCC",
-    borderRadius: 12,
-    backgroundColor: "#FFFFFF",
+    borderColor: COLORS.border,
+    borderRadius: RADII.md,
+    backgroundColor: COLORS.surface,
   },
   optionCardSelected: {
-    borderColor: "#4A90D9",
-    backgroundColor: "#EBF4FD",
+    borderColor: COLORS.accent,
+    backgroundColor: COLORS.surfaceAlt,
   },
   optionText: {
     fontSize: 18,
-    color: "#000000",
+    color: COLORS.text,
     flex: 1,
   },
-  checkMark: {
-    fontSize: 24,
-    color: "#4A90D9",
-    fontWeight: "bold",
+  checkDot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.accent,
   },
   permissionContainer: {
     marginBottom: 32,
@@ -488,49 +503,58 @@ const styles = StyleSheet.create({
     minHeight: 80,
     padding: 16,
     borderWidth: 2,
-    borderColor: "#CCCCCC",
-    borderRadius: 12,
-    backgroundColor: "#FFFFFF",
+    borderColor: COLORS.border,
+    borderRadius: RADII.md,
+    backgroundColor: COLORS.surface,
   },
-  permissionIcon: {
-    fontSize: 32,
-    marginRight: 16,
+  permissionIconContainer: {
+    marginRight: 12,
+  },
+  permissionLabel: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: COLORS.text,
   },
   permissionTextContainer: {
     flex: 1,
   },
-  permissionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#000000",
-    marginBottom: 4,
-  },
   permissionDescription: {
     fontSize: 16,
-    color: "#666666",
+    color: COLORS.textSecondary,
   },
   permissionButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: "#4A90D9",
-    borderRadius: 8,
+    backgroundColor: COLORS.buttonPrimary,
+    borderRadius: RADII.full,
     minWidth: 100,
     alignItems: "center",
   },
   permissionButtonText: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+    fontWeight: "600",
+    color: COLORS.buttonText,
+  },
+  grantedContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  grantedDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: COLORS.success,
   },
   grantedText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#4CAF50",
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.success,
   },
   primaryButton: {
     height: 56,
-    backgroundColor: "#4A90D9",
-    borderRadius: 12,
+    backgroundColor: COLORS.buttonPrimary,
+    borderRadius: RADII.full,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
@@ -538,13 +562,13 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   buttonDisabled: {
-    backgroundColor: "#CCCCCC",
+    backgroundColor: COLORS.inactive,
     opacity: 0.6,
   },
   buttonText: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+    fontWeight: "700",
+    color: COLORS.buttonText,
   },
   secondaryButton: {
     height: 56,
@@ -556,6 +580,6 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#4A90D9",
+    color: COLORS.accent,
   },
 });

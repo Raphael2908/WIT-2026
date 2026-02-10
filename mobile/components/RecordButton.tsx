@@ -7,6 +7,7 @@ import {
   Animated,
   ActivityIndicator,
 } from 'react-native';
+import { COLORS } from '../utils/theme';
 
 interface RecordButtonProps {
   onPressIn: () => void;
@@ -47,11 +48,11 @@ export default function RecordButton({
   const getBackgroundColor = () => {
     switch (status) {
       case 'recording':
-        return '#E53E3E';
+        return COLORS.error;
       case 'processing':
-        return '#6B7280';
+        return COLORS.textSecondary;
       default:
-        return '#9CA3AF';
+        return COLORS.accent;
     }
   };
 
@@ -68,12 +69,10 @@ export default function RecordButton({
 
   const renderContent = () => {
     if (status === 'processing') {
-      return <ActivityIndicator size="large" color="#FFFFFF" />;
+      return <ActivityIndicator size="large" color={COLORS.buttonText} />;
     }
     return (
-      <Text style={[styles.icon, status === 'recording' && styles.iconRecording]}>
-        🎤
-      </Text>
+      <View style={[styles.recIndicator, status === 'recording' && styles.recIndicatorActive]} />
     );
   };
 
@@ -115,16 +114,21 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 4,
   },
-  icon: {
-    fontSize: 36,
+  recIndicator: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.buttonText,
+    opacity: 0.6,
   },
-  iconRecording: {
-    color: '#FFFFFF',
+  recIndicatorActive: {
+    opacity: 1,
+    backgroundColor: COLORS.buttonText,
   },
 });

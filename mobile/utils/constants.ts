@@ -1,37 +1,5 @@
 import type { UserProfile } from "../types";
 
-// MediaPipe Face Mesh lip landmark indices
-export const LIP_INDICES = [
-  61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291,
-  308, 324, 318, 402, 317, 14, 87, 178, 88, 95,
-  185, 40, 39, 37, 0, 267, 269, 270, 409, 415,
-  310, 311, 312, 13, 82, 81, 42, 183, 78,
-];
-
-export const UPPER_LIP_CENTER = [13, 14];
-export const LOWER_LIP_CENTER = [17, 0];
-export const MOUTH_CORNERS = [61, 291];
-export const UPPER_LIP_INDICES = [
-  185, 40, 39, 37, 0, 267, 269, 270, 409, 415, 310, 311, 312, 13, 82, 81, 42,
-  183, 78,
-];
-export const LOWER_LIP_INDICES = [
-  61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 308, 324, 318, 402, 317,
-  14, 87, 178, 88, 95,
-];
-
-// Shape classification thresholds
-export const SHAPE_THRESHOLDS = {
-  CLOSED_MAX_OPEN: 0.1,
-  BARELY_OPEN_MAX: 0.25,
-  WIDE_SPREAD_MIN_WIDTH: 0.55,
-  PURSED_MAX_WIDTH: 0.3,
-  PURSED_MIN_ROUND: 1.2,
-  NARROW_MAX_WIDTH: 0.35,
-  OPEN_SPREAD_MIN_WIDTH: 0.5,
-  OPEN_ROUND_MIN_ROUND: 1.0,
-};
-
 // Audio config
 export const AUDIO_CONFIG = {
   SAMPLE_RATE: 16000,
@@ -75,6 +43,23 @@ export const API_ROUTES = {
   DECODE_STREAM: (id: string) => `/decode/${id}/stream`,
   SUBMIT_FEEDBACK: (id: string) => `/feedback/${id}`,
   FEEDBACK_HISTORY: (id: string) => `/feedback/${id}/history`,
+};
+
+// Default AAC phrases by category
+export const DEFAULT_PHRASES: Record<string, string[]> = {
+  essentials: ["Yes", "No", "Maybe", "Please", "Thank you", "Sorry", "Help"],
+  greetings: ["Hello", "Hi", "Good morning", "Goodbye", "See you later", "How are you?"],
+  needs: [
+    "I need water", "I need help", "I'm hungry", "I'm tired",
+    "I need a break", "I'm in pain", "I need the bathroom",
+  ],
+  responses: [
+    "I agree", "I don't agree", "I don't know", "Can you repeat that?",
+    "Give me a moment", "I'm thinking", "That's fine",
+  ],
+  emergency: [
+    "I need help now", "Call someone", "I'm not okay", "I need my medication",
+  ],
 };
 
 // Demo mode

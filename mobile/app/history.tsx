@@ -8,9 +8,11 @@ import {
   Pressable,
   ActivityIndicator,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useUser } from "../hooks/useUser";
 import { useDecodeHistory } from "../hooks/useDecodeHistory";
+import { COLORS, RADII } from "../utils/theme";
 import { DecodeHistoryEntry } from "../types";
 
 function formatRelativeTime(dateString: string): string {
@@ -40,12 +42,18 @@ function HistoryItem({
 }) {
   const getStatusBadge = () => {
     if (entry.feedback_status === "confirmed") {
-      return <Text style={styles.statusBadgeConfirmed}>✓</Text>;
+      return (
+        <View style={[styles.statusDot, { backgroundColor: COLORS.success }]} />
+      );
     }
     if (entry.feedback_status === "corrected") {
-      return <Text style={styles.statusBadgeCorrected}>✎</Text>;
+      return (
+        <View style={[styles.statusDot, { backgroundColor: COLORS.accent }]} />
+      );
     }
-    return <Text style={styles.statusBadgePending}>⋯</Text>;
+    return (
+      <View style={[styles.statusDot, { backgroundColor: COLORS.inactive }]} />
+    );
   };
 
   return (
@@ -64,8 +72,8 @@ function HistoryItem({
               {formatRelativeTime(entry.created_at)}
             </Text>
             <View style={styles.modalityIcons}>
-              <Text style={styles.modalityIcon}>🔊</Text>
-              {entry.lip_used && <Text style={styles.modalityIcon}>👄</Text>}
+              <Text style={styles.modalityLabel}>Audio</Text>
+              {entry.lip_used && <Text style={styles.modalityLabel}>+ Lips</Text>}
             </View>
           </View>
         </View>
@@ -116,11 +124,13 @@ export default function HistoryScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4A90D9" />
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientEnd]} style={styles.gradient}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.accent} />
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
@@ -130,81 +140,85 @@ export default function HistoryScreen() {
       : 0;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Pressable
-          onPress={handleBack}
-          style={styles.backButton}
-          accessibilityLabel="Go back"
-        >
-          <Text style={styles.backButtonText}>←</Text>
-        </Pressable>
-        <Text style={styles.headerTitle}>Your Speech History</Text>
-      </View>
+    <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientEnd]} style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Pressable
+            onPress={handleBack}
+            style={styles.backButton}
+            accessibilityLabel="Go back"
+          >
+            <Text style={styles.backButtonText}>Back</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>Your Speech History</Text>
+        </View>
 
-      <FlatList
-        data={history}
-        keyExtractor={(item) => item.decode_id}
-        renderItem={({ item }) => (
-          <HistoryItem
-            entry={item}
-            onPress={() => toggleExpand(item.decode_id)}
-            expanded={expandedId === item.decode_id}
-          />
-        )}
-        ListHeaderComponent={
-          <View style={styles.statsCard}>
-            <Text style={styles.statsTitle}>Statistics</Text>
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{stats.totalDecodes}</Text>
-                <Text style={styles.statLabel}>Total Decodes</Text>
+        <FlatList
+          data={history}
+          keyExtractor={(item) => item.decode_id}
+          renderItem={({ item }) => (
+            <HistoryItem
+              entry={item}
+              onPress={() => toggleExpand(item.decode_id)}
+              expanded={expandedId === item.decode_id}
+            />
+          )}
+          ListHeaderComponent={
+            <View style={styles.statsCard}>
+              <Text style={styles.statsTitle}>Statistics</Text>
+              <View style={styles.statsRow}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{stats.totalDecodes}</Text>
+                  <Text style={styles.statLabel}>Total Decodes</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{accuracyRate}%</Text>
+                  <Text style={styles.statLabel}>Accuracy Rate</Text>
+                </View>
               </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{accuracyRate}%</Text>
-                <Text style={styles.statLabel}>Accuracy Rate</Text>
+              <View style={styles.statsRow}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{stats.confirmedCount}</Text>
+                  <Text style={styles.statLabel}>Confirmed</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{stats.correctedCount}</Text>
+                  <Text style={styles.statLabel}>Corrected</Text>
+                </View>
               </View>
+              {stats.accuracyTrend.length > 0 && (
+                <View style={styles.trendRow}>
+                  <Text style={styles.trendLabel}>Recent accuracy trend:</Text>
+                  <Text style={styles.trendValue}>
+                    {stats.accuracyTrend.map((val) => `${val}%`).join(", ")}
+                  </Text>
+                </View>
+              )}
             </View>
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{stats.confirmedCount}</Text>
-                <Text style={styles.statLabel}>Confirmed</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{stats.correctedCount}</Text>
-                <Text style={styles.statLabel}>Corrected</Text>
-              </View>
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No decode history yet</Text>
+              <Text style={styles.emptySubtext}>
+                Start using the app to build your history
+              </Text>
             </View>
-            {stats.accuracyTrend.length > 0 && (
-              <View style={styles.trendRow}>
-                <Text style={styles.trendLabel}>Recent accuracy trend:</Text>
-                <Text style={styles.trendValue}>
-                  {stats.accuracyTrend.map((val) => `${val}%`).join(", ")}
-                </Text>
-              </View>
-            )}
-          </View>
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No decode history yet</Text>
-            <Text style={styles.emptySubtext}>
-              Start using the app to build your history
-            </Text>
-          </View>
-        }
-        onRefresh={refresh}
-        refreshing={isLoading}
-        contentContainerStyle={styles.listContent}
-      />
-    </SafeAreaView>
+          }
+          onRefresh={refresh}
+          refreshing={isLoading}
+          contentContainerStyle={styles.listContent}
+        />
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
   loadingContainer: {
     flex: 1,
@@ -216,39 +230,44 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E5E5",
   },
   backButton: {
     minWidth: 44,
     minHeight: 44,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: RADII.sm,
+    backgroundColor: COLORS.surface,
   },
   backButtonText: {
-    fontSize: 28,
-    color: "#4A90D9",
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.accent,
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#333333",
+    fontWeight: "700",
+    color: COLORS.text,
     marginLeft: 12,
   },
   listContent: {
     paddingBottom: 20,
   },
   statsCard: {
-    backgroundColor: "#F8F9FA",
+    backgroundColor: COLORS.surface,
     padding: 20,
     marginHorizontal: 16,
     marginVertical: 16,
-    borderRadius: 12,
+    borderRadius: RADII.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   statsTitle: {
     fontSize: 22,
-    fontWeight: "bold",
-    color: "#333333",
+    fontWeight: "700",
+    color: COLORS.text,
     marginBottom: 16,
   },
   statsRow: {
@@ -262,35 +281,38 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 32,
-    fontWeight: "bold",
-    color: "#4A90D9",
+    fontWeight: "700",
+    color: COLORS.accent,
   },
   statLabel: {
     fontSize: 16,
-    color: "#666666",
+    color: COLORS.textSecondary,
     marginTop: 4,
   },
   trendRow: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#E5E5E5",
+    borderTopColor: COLORS.border,
   },
   trendLabel: {
     fontSize: 16,
-    color: "#666666",
+    color: COLORS.textSecondary,
     marginBottom: 4,
   },
   trendValue: {
     fontSize: 16,
-    color: "#333333",
+    color: COLORS.text,
   },
   itemContainer: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: COLORS.surface,
     paddingVertical: 16,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E5E5",
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: RADII.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     minHeight: 48,
   },
   itemHeader: {
@@ -304,7 +326,7 @@ const styles = StyleSheet.create({
   decodedText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333333",
+    color: COLORS.text,
     marginBottom: 8,
   },
   itemMetadata: {
@@ -314,14 +336,15 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontSize: 14,
-    color: "#999999",
+    color: COLORS.textSecondary,
   },
   modalityIcons: {
     flexDirection: "row",
+    gap: 4,
   },
-  modalityIcon: {
-    fontSize: 16,
-    marginLeft: 4,
+  modalityLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
   },
   statusBadgeContainer: {
     justifyContent: "center",
@@ -329,38 +352,31 @@ const styles = StyleSheet.create({
     minWidth: 44,
     minHeight: 44,
   },
-  statusBadgeConfirmed: {
-    fontSize: 28,
-    color: "#28A745",
-  },
-  statusBadgeCorrected: {
-    fontSize: 28,
-    color: "#4A90D9",
-  },
-  statusBadgePending: {
-    fontSize: 28,
-    color: "#999999",
+  statusDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
   expandedContent: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#E5E5E5",
+    borderTopColor: COLORS.border,
   },
   detailRow: {
     marginBottom: 8,
   },
   detailLabel: {
     fontSize: 16,
-    color: "#666666",
+    color: COLORS.textSecondary,
     marginBottom: 2,
   },
   detailValue: {
     fontSize: 18,
-    color: "#333333",
+    color: COLORS.text,
   },
   correctedText: {
-    color: "#4A90D9",
+    color: COLORS.accent,
     fontWeight: "600",
   },
   emptyContainer: {
@@ -371,12 +387,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 22,
     fontWeight: "600",
-    color: "#666666",
+    color: COLORS.textSecondary,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 18,
-    color: "#999999",
+    color: COLORS.textSecondary,
     textAlign: "center",
   },
 });
