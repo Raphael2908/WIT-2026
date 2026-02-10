@@ -1,0 +1,18 @@
+user_id: test_user_001
+category: multimodal_input_fusion
+confidence: 0.85
+calibration_date: '2026-02-10T15:28:04.538888'
+phoneme_patterns:
+  complete_divergence: No phonemic correspondence between expected and actual output
+  semantic_disconnection: Utterances are semantically unrelated to expected input
+  preservation_of_structure: Maintains grammatical structure and sentence coherence
+    despite content mismatch
+common_substitutions:
+  unable_to_determine: Actual transcriptions show no lexical or phonemic overlap with
+    expected sentences to establish substitution patterns
+weights:
+  audio: 0.5
+  visual: 0.9
+  gesture: 0.7
+confidence_threshold: 0.7
+last_updated: '2026-02-10T15:28:04.538888'

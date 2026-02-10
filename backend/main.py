@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 
+from app.api.calibration import router as calibration_router
+
 app = FastAPI(title="Speech Accessibility API")
+
+app.include_router(calibration_router)
 
 @app.get("/")
 def root():

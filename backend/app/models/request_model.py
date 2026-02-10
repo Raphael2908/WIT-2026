@@ -41,3 +41,15 @@ class CorrectionRequest(BaseModel):
     user_id: str = Field(..., description="Unique user identifier")
     original_text: str = Field(..., description="Original transcribed text")
     corrected_text: str = Field(..., description="User-corrected text")
+
+
+class CalibrationResponse(BaseModel):
+    """Response model for calibration endpoint."""
+
+    status: str = "success"
+    category: str = Field(..., description="Impairment category")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Calibration confidence")
+    phoneme_patterns: dict[str, str] = Field(
+        default_factory=dict, description="Detected phoneme patterns"
+    )
+    message: str = "Calibration complete"
