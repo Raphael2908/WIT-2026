@@ -7,19 +7,26 @@ import {
   ScrollView,
   Pressable,
   TextInput,
+  Switch,
   Alert,
   ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useUser } from "../hooks/useUser";
+<<<<<<< Updated upstream
 import { COLORS, RADII } from "../utils/theme";
+=======
+import { getTtsEnabled, saveTtsEnabled } from "../services/storage";
+>>>>>>> Stashed changes
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, updateUser, isLoading } = useUser();
   const [displayName, setDisplayName] = useState(user?.display_name || "");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState<boolean>(false);
+  const [ttsLoaded, setTtsLoaded] = useState(false);
 
   const handleBack = () => {
     router.back();
@@ -42,6 +49,37 @@ export default function SettingsScreen() {
 
   const handleRecalibrate = () => {
     router.push("/calibration");
+  };
+
+  const handleOpenTtsTest = () => {
+    router.push("/tts-test");
+  };
+
+  React.useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      const stored = await getTtsEnabled();
+      const defaultEnabled =
+        user?.vision_impairment_hint === "blind" ||
+        user?.vision_impairment_hint === "partial";
+      if (isMounted) {
+        setTtsEnabled(stored ?? defaultEnabled);
+        setTtsLoaded(true);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.vision_impairment_hint]);
+
+  const handleToggleTts = async (value: boolean) => {
+    try {
+      setTtsEnabled(value);
+      await saveTtsEnabled(value);
+    } catch (error) {
+      console.error("Error saving TTS preference:", error);
+      Alert.alert("Error", "Failed to update text-to-speech setting.");
+    }
   };
 
   if (isLoading || !user) {
@@ -133,9 +171,44 @@ export default function SettingsScreen() {
             </View>
           </View>
 
+<<<<<<< Updated upstream
           {/* MODALITIES Section */}
           <View style={styles.section}>
             <Text style={styles.sectionHeader}>Modalities</Text>
+=======
+        {/* ACCESSIBILITY Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionHeader}>ACCESSIBILITY</Text>
+
+          <View style={styles.card}>
+            <Pressable
+              style={styles.buttonSecondary}
+              onPress={handleOpenTtsTest}
+              accessibilityLabel="Open interactive text to speech test"
+            >
+              <Text style={styles.buttonSecondaryText}>Open TTS Test Screen</Text>
+            </Pressable>
+            <View style={styles.switchRow}>
+              <View style={styles.switchTextGroup}>
+                <Text style={styles.label}>Speak decoded text aloud</Text>
+                <Text style={styles.helperText}>
+                  Recommended for blind or partial vision impairment.
+                </Text>
+              </View>
+              <Switch
+                value={ttsEnabled}
+                onValueChange={handleToggleTts}
+                disabled={!ttsLoaded}
+                accessibilityLabel="Toggle text-to-speech for decoded results"
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* ABOUT Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionHeader}>ABOUT</Text>
+>>>>>>> Stashed changes
 
             <View style={styles.card}>
               <View style={styles.cardRow}>
@@ -282,9 +355,37 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: COLORS.buttonText,
   },
+  buttonSecondary: {
+    backgroundColor: "#111827",
+    borderRadius: 8,
+    padding: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+    minHeight: 48,
+  },
+  buttonSecondaryText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
   aboutText: {
     fontSize: 18,
     color: COLORS.textSecondary,
     textAlign: "center",
+  },
+  switchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  switchTextGroup: {
+    flex: 1,
+  },
+  helperText: {
+    marginTop: 4,
+    fontSize: 14,
+    color: "#7A7A7A",
   },
 });

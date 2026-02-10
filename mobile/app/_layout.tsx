@@ -16,6 +16,7 @@ export default function RootLayout() {
       <Stack.Screen name="speak" />
       <Stack.Screen name="history" />
       <Stack.Screen name="settings" />
+      <Stack.Screen name="tts-test" />
     </Stack>
   );
 }
