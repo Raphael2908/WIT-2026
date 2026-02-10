@@ -7,3 +7,11 @@ venv
 *.env
 
 .Claude/
+
+# Local ML model assets
+backend/models/*.task
+
+# Local test and visualization artifacts
+backend/tests/*.mp4
+backend/tests/*.jpg
+backend/tests/manual_*.sh

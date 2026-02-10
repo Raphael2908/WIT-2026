@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Speech Decoder",
+    "slug": "speech-decoder",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "speech-decoder",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "This app needs microphone access to record your speech for decoding.",
+        "NSCameraUsageDescription": "This app needs camera access to track lip movements for improved speech decoding."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "RECORD_AUDIO",
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "This app needs camera access to track lip movements for improved speech decoding."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "This app needs microphone access to record your speech for decoding."
+        }
+      ]
+    ]
+  }
+}
