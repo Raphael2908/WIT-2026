@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { COLORS, RADII } from '../utils/theme';
 
 interface FeedbackBarProps {
   onConfirm: () => void;
@@ -75,7 +76,7 @@ export default function FeedbackBar({
           accessibilityLabel="Confirm decoded text is correct"
           accessibilityRole="button"
         >
-          <Text style={styles.buttonText}>✓ Correct</Text>
+          <Text style={styles.buttonText}>Correct</Text>
         </Pressable>
 
         <Pressable
@@ -84,7 +85,7 @@ export default function FeedbackBar({
           accessibilityLabel="Edit decoded text"
           accessibilityRole="button"
         >
-          <Text style={styles.buttonText}>✎ Edit</Text>
+          <Text style={styles.buttonText}>Edit</Text>
         </Pressable>
       </Animated.View>
 
@@ -142,13 +143,13 @@ export default function FeedbackBar({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: COLORS.border,
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
-    shadowColor: '#000',
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -157,55 +158,55 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     minHeight: 48,
-    borderRadius: 8,
+    borderRadius: RADII.full,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
   confirmButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: COLORS.success,
   },
   editButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: COLORS.accent,
   },
   buttonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.buttonText,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.md,
     padding: 24,
     width: '85%',
     maxWidth: 400,
-    shadowColor: '#000',
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     elevation: 12,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1F2937',
+    color: COLORS.text,
     marginBottom: 16,
     textAlign: 'center',
   },
   textInput: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
+    borderColor: COLORS.border,
+    borderRadius: RADII.sm,
     padding: 12,
     fontSize: 16,
-    color: '#1F2937',
+    color: COLORS.text,
     minHeight: 100,
     textAlignVertical: 'top',
     marginBottom: 16,
@@ -217,20 +218,20 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     minHeight: 48,
-    borderRadius: 8,
+    borderRadius: RADII.full,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
   },
   cancelButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: COLORS.border,
   },
   cancelButtonText: {
-    color: '#6B7280',
+    color: COLORS.textSecondary,
   },
   submitButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: COLORS.buttonPrimary,
   },
 });

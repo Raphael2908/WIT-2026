@@ -1,5 +1,6 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Pressable, StyleSheet, Animated } from 'react-native';
+import { COLORS, RADII } from '../utils/theme';
 
 interface SpeakButtonProps {
   onPressIn: () => void;
@@ -51,18 +52,15 @@ export default function SpeakButton({
           style={[
             styles.button,
             {
-              backgroundColor: isActive ? '#E53E3E' : '#4A90D9',
+              backgroundColor: isActive ? COLORS.error : COLORS.accent,
               opacity: disabled ? 0.5 : 1,
               transform: [{ scale: scaleAnim }],
             },
           ]}
         >
-          <Text style={styles.icon}>🗣️</Text>
+          <View style={styles.innerCircle} />
         </Animated.View>
       </Pressable>
-      <Text style={[styles.label, disabled && styles.labelDisabled]}>
-        Hold to Speak
-      </Text>
     </View>
   );
 }
@@ -84,22 +82,17 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 8,
   },
-  icon: {
-    fontSize: 48,
-  },
-  label: {
-    marginTop: 16,
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  labelDisabled: {
-    color: '#9CA3AF',
+  innerCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.buttonText,
+    opacity: 0.6,
   },
 });

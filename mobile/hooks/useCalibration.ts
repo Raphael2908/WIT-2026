@@ -5,7 +5,6 @@ import type {
   CalibrationPhrase,
   CalibrationResult,
   CalibrationSummary,
-  LipFrame,
 } from "../types";
 
 type CalibrationStatus =
@@ -49,7 +48,7 @@ export function useCalibration(userId: string) {
   }, []);
 
   const submitRecording = useCallback(
-    async (audioUri: string, lipFrames: LipFrame[]): Promise<CalibrationResult> => {
+    async (audioUri: string, videoUri: string): Promise<CalibrationResult> => {
       if (!currentPhrase) {
         throw new Error("No current phrase to submit");
       }
@@ -64,7 +63,11 @@ export function useCalibration(userId: string) {
           type: "audio/wav",
           name: "audio.wav",
         } as any);
-        formData.append("lip_frames", JSON.stringify(lipFrames));
+        formData.append("video", {
+          uri: videoUri,
+          type: "video/mp4",
+          name: "video.mp4",
+        } as any);
         formData.append("phrase_id", currentPhrase.phrase_id);
 
         const result = await api.postFormData<CalibrationResult>(

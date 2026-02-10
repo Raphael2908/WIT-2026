@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { COLORS } from "../utils/theme";
 
 interface CalibrationProgressProps {
   current: number;
@@ -14,12 +15,12 @@ export default function CalibrationProgress({
 }: CalibrationProgressProps) {
   const getSegmentColor = (index: number): string => {
     if (index < results.length) {
-      return results[index].match ? "#22C55E" : "#EF4444";
+      return results[index].match ? COLORS.success : COLORS.error;
     }
     if (index === current) {
-      return "#3B82F6";
+      return COLORS.accent;
     }
-    return "#E5E7EB";
+    return COLORS.inactive;
   };
 
   return (
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     marginBottom: 8,
-    color: "#374151",
+    color: COLORS.textSecondary,
   },
   progressBar: {
     flexDirection: "row",

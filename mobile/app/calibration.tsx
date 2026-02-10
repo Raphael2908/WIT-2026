@@ -8,12 +8,13 @@ import {
   Pressable,
   ActivityIndicator,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useUser } from "../hooks/useUser";
 import { useCalibration } from "../hooks/useCalibration";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
-import { useFaceMesh } from "../hooks/useFaceMesh";
-import { useLipTracker } from "../hooks/useLipTracker";
+import { useVideoRecorder } from "../hooks/useVideoRecorder";
+import { COLORS, RADII } from "../utils/theme";
 import PhraseCard from "../components/PhraseCard";
 import CalibrationProgress from "../components/CalibrationProgress";
 import RecordButton from "../components/RecordButton";
@@ -27,8 +28,7 @@ export default function CalibrationScreen() {
 
   const calibration = useCalibration(userId);
   const audioRecorder = useAudioRecorder();
-  const faceMesh = useFaceMesh();
-  const lipTracker = useLipTracker(faceMesh.lipLandmarks, faceMesh.landmarks);
+  const videoRecorder = useVideoRecorder();
 
   const [recordingState, setRecordingState] = useState<
     "idle" | "recording" | "processing"
@@ -38,24 +38,27 @@ export default function CalibrationScreen() {
   useEffect(() => {
     if (userId) {
       calibration.startSession();
-      faceMesh.startCamera?.();
     }
   }, [userId]);
 
   const handlePressIn = async () => {
     setRecordingState("recording");
     setShowResult(false);
-    await audioRecorder.startRecording();
-    lipTracker.startTracking();
+    await Promise.all([
+      audioRecorder.startRecording(),
+      videoRecorder.startRecording(),
+    ]);
   };
 
   const handlePressOut = async () => {
     setRecordingState("processing");
-    const audioUri = await audioRecorder.stopRecording();
-    const lipFrames = lipTracker.stopTracking();
+    const [audioUri, videoUri] = await Promise.all([
+      audioRecorder.stopRecording(),
+      videoRecorder.stopRecording(),
+    ]);
 
     try {
-      await calibration.submitRecording(audioUri, lipFrames);
+      await calibration.submitRecording(audioUri, videoUri);
       setShowResult(true);
       setRecordingState("idle");
     } catch (err) {
@@ -67,8 +70,6 @@ export default function CalibrationScreen() {
     setShowResult(false);
     if (calibration.currentIndex >= calibration.totalPhrases - 1) {
       handleComplete();
-    } else {
-      // Move to next phrase automatically handled by useCalibration
     }
   };
 
@@ -94,78 +95,84 @@ export default function CalibrationScreen() {
 
   if (calibration.status === "loading") {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4A90D9" />
-          <Text style={styles.loadingText}>Loading calibration phrases...</Text>
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientEnd]} style={styles.gradient}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.accent} />
+            <Text style={styles.loadingText}>Loading calibration phrases...</Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   if (calibration.summary) {
     return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.summaryContainer}>
-          <Text style={styles.summaryTitle}>Calibration Complete!</Text>
+      <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientEnd]} style={styles.gradient}>
+        <SafeAreaView style={styles.container}>
+          <ScrollView contentContainerStyle={styles.summaryContainer}>
+            <Text style={styles.summaryTitle}>Calibration Complete</Text>
 
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>Accuracy</Text>
-            <Text style={styles.summaryValue}>
-              {calibration.summary.accuracy_pct.toFixed(0)}%
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryLabel}>Accuracy</Text>
+              <Text style={styles.summaryValue}>
+                {calibration.summary.accuracy_pct.toFixed(0)}%
+              </Text>
+              <Text style={styles.summarySubtext}>
+                {calibration.summary.accurate_phrases} of{" "}
+                {calibration.summary.total_phrases} phrases matched
+              </Text>
+            </View>
+
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryLabel}>Recommended Modalities</Text>
+              <Text style={styles.summaryValue}>
+                {calibration.summary.recommended_modalities.join(" + ")}
+              </Text>
+            </View>
+
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryLabel}>Average Confidence</Text>
+              <Text style={styles.summaryValue}>
+                {(calibration.summary.avg_confidence * 100).toFixed(0)}%
+              </Text>
+            </View>
+
+            <Text style={styles.profileReadyText}>
+              Your speech profile is ready
             </Text>
-            <Text style={styles.summarySubtext}>
-              {calibration.summary.accurate_phrases} of{" "}
-              {calibration.summary.total_phrases} phrases matched
-            </Text>
-          </View>
 
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>Recommended Modalities</Text>
-            <Text style={styles.summaryValue}>
-              {calibration.summary.recommended_modalities.join(" + ")}
-            </Text>
-          </View>
-
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>Average Confidence</Text>
-            <Text style={styles.summaryValue}>
-              {(calibration.summary.avg_confidence * 100).toFixed(0)}%
-            </Text>
-          </View>
-
-          <Text style={styles.profileReadyText}>
-            Your speech profile is ready!
-          </Text>
-
-          <Pressable
-            style={styles.startButton}
-            onPress={handleStartUsing}
-            accessibilityLabel="Start using the app"
-          >
-            <Text style={styles.startButtonText}>Start Using</Text>
-          </Pressable>
-        </ScrollView>
-      </SafeAreaView>
+            <Pressable
+              style={styles.startButton}
+              onPress={handleStartUsing}
+              accessibilityLabel="Start using the app"
+            >
+              <Text style={styles.startButtonText}>Start Using</Text>
+            </Pressable>
+          </ScrollView>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   if (calibration.error || audioRecorder.error) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>
-            {calibration.error || audioRecorder.error}
-          </Text>
-          <Pressable
-            style={styles.retryButton}
-            onPress={() => calibration.startSession()}
-            accessibilityLabel="Retry calibration"
-          >
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientEnd]} style={styles.gradient}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>
+              {calibration.error || audioRecorder.error}
+            </Text>
+            <Pressable
+              style={styles.retryButton}
+              onPress={() => calibration.startSession()}
+              accessibilityLabel="Retry calibration"
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
@@ -175,94 +182,97 @@ export default function CalibrationScreen() {
       : null;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <CalibrationProgress
-          current={calibration.currentIndex + 1}
-          total={calibration.totalPhrases}
-          results={calibration.results}
-        />
+    <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientEnd]} style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
+        {/* Hidden camera for video recording */}
+        <MiniCameraPreview cameraRef={videoRecorder.cameraRef} />
 
-        <Text style={styles.progressText}>
-          Phrase {calibration.currentIndex + 1} of {calibration.totalPhrases}
-        </Text>
-
-        {calibration.currentPhrase && (
-          <PhraseCard
-            phrase={calibration.currentPhrase}
-            status={getPhraseCardStatus()}
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <CalibrationProgress
+            current={calibration.currentIndex + 1}
+            total={calibration.totalPhrases}
+            results={calibration.results}
           />
-        )}
 
-        <MiniCameraPreview
-          showMesh={true}
-          position="top-right"
-          hidden={user?.vision_impairment_hint === "blind"}
-          lipLandmarks={faceMesh.lipLandmarks}
-          isTracking={faceMesh.isTracking}
-        />
+          <Text style={styles.progressText}>
+            Phrase {calibration.currentIndex + 1} of {calibration.totalPhrases}
+          </Text>
 
-        <WaveformVisualizer
-          audioLevel={audioRecorder.audioLevel}
-          isActive={recordingState === "recording"}
-        />
+          {calibration.currentPhrase && (
+            <PhraseCard
+              phrase={calibration.currentPhrase}
+              status={getPhraseCardStatus()}
+            />
+          )}
 
-        <View style={styles.recordButtonContainer}>
-          <RecordButton
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
-            status={getRecordButtonStatus()}
+          <WaveformVisualizer
+            audioLevel={audioRecorder.audioLevel}
+            isActive={recordingState === "recording"}
           />
-        </View>
 
-        {showResult && currentResult && (
-          <View style={styles.resultContainer}>
-            {currentResult.match ? (
-              <View style={styles.successResult}>
-                <Text style={styles.successIcon}>✓</Text>
-                <Text style={styles.successText}>Whisper got it right!</Text>
-              </View>
-            ) : (
-              <View style={styles.errorResult}>
-                <Text style={styles.errorIcon}>✗</Text>
-                <Text style={styles.comparisonText}>
-                  You said: "{currentResult.phrase_text}"
-                </Text>
-                <Text style={styles.comparisonText}>
-                  Whisper heard: "{currentResult.whisper_output}"
-                </Text>
-                {currentResult.error_mapping_created && (
-                  <Text style={styles.savedText}>Error pattern saved ✓</Text>
-                )}
-              </View>
-            )}
-
-            <Pressable
-              style={styles.nextButton}
-              onPress={handleNext}
-              accessibilityLabel={
-                calibration.currentIndex >= calibration.totalPhrases - 1
-                  ? "Finish calibration"
-                  : "Next phrase"
-              }
-            >
-              <Text style={styles.nextButtonText}>
-                {calibration.currentIndex >= calibration.totalPhrases - 1
-                  ? "Finish"
-                  : "Next"}
-              </Text>
-            </Pressable>
+          <View style={styles.recordButtonContainer}>
+            <RecordButton
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              status={getRecordButtonStatus()}
+            />
           </View>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+
+          {showResult && currentResult && (
+            <View style={styles.resultContainer}>
+              {currentResult.match ? (
+                <View style={styles.successResult}>
+                  <View style={styles.resultDot}>
+                    <View style={[styles.resultDotInner, { backgroundColor: COLORS.success }]} />
+                  </View>
+                  <Text style={styles.successText}>Whisper got it right</Text>
+                </View>
+              ) : (
+                <View style={styles.errorResult}>
+                  <View style={styles.resultDot}>
+                    <View style={[styles.resultDotInner, { backgroundColor: COLORS.error }]} />
+                  </View>
+                  <Text style={styles.comparisonText}>
+                    You said: "{currentResult.phrase_text}"
+                  </Text>
+                  <Text style={styles.comparisonText}>
+                    Whisper heard: "{currentResult.whisper_output}"
+                  </Text>
+                  {currentResult.error_mapping_created && (
+                    <Text style={styles.savedText}>Error pattern saved</Text>
+                  )}
+                </View>
+              )}
+
+              <Pressable
+                style={styles.nextButton}
+                onPress={handleNext}
+                accessibilityLabel={
+                  calibration.currentIndex >= calibration.totalPhrases - 1
+                    ? "Finish calibration"
+                    : "Next phrase"
+                }
+              >
+                <Text style={styles.nextButtonText}>
+                  {calibration.currentIndex >= calibration.totalPhrases - 1
+                    ? "Finish"
+                    : "Next"}
+                </Text>
+              </Pressable>
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
   scrollContent: {
     flexGrow: 1,
@@ -277,11 +287,11 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 18,
-    color: "#333333",
+    color: COLORS.textSecondary,
   },
   progressText: {
     fontSize: 18,
-    color: "#666666",
+    color: COLORS.textSecondary,
     textAlign: "center",
     marginVertical: 12,
   },
@@ -292,54 +302,54 @@ const styles = StyleSheet.create({
   resultContainer: {
     marginTop: 24,
     padding: 16,
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   successResult: {
     alignItems: "center",
   },
-  successIcon: {
-    fontSize: 48,
-    color: "#28A745",
+  resultDot: {
     marginBottom: 8,
+  },
+  resultDotInner: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   successText: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#28A745",
+    color: COLORS.success,
   },
   errorResult: {
     alignItems: "center",
   },
-  errorIcon: {
-    fontSize: 48,
-    color: "#DC3545",
-    marginBottom: 8,
-  },
   comparisonText: {
     fontSize: 18,
-    color: "#333333",
+    color: COLORS.text,
     textAlign: "center",
     marginVertical: 4,
   },
   savedText: {
     fontSize: 16,
-    color: "#28A745",
+    color: COLORS.success,
     marginTop: 12,
   },
   nextButton: {
     marginTop: 20,
-    backgroundColor: "#4A90D9",
+    backgroundColor: COLORS.buttonPrimary,
     paddingVertical: 16,
     paddingHorizontal: 48,
-    borderRadius: 8,
+    borderRadius: RADII.full,
     alignItems: "center",
     minHeight: 48,
   },
   nextButtonText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#FFFFFF",
+    color: COLORS.buttonText,
   },
   summaryContainer: {
     flexGrow: 1,
@@ -349,53 +359,55 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: 32,
-    fontWeight: "bold",
-    color: "#333333",
+    fontWeight: "700",
+    color: COLORS.text,
     marginBottom: 32,
     textAlign: "center",
   },
   summaryCard: {
     width: "100%",
-    backgroundColor: "#F8F9FA",
+    backgroundColor: COLORS.surface,
     padding: 24,
-    borderRadius: 12,
+    borderRadius: RADII.md,
     marginBottom: 16,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   summaryLabel: {
     fontSize: 18,
-    color: "#666666",
+    color: COLORS.textSecondary,
     marginBottom: 8,
   },
   summaryValue: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#4A90D9",
+    fontWeight: "700",
+    color: COLORS.accent,
   },
   summarySubtext: {
     fontSize: 16,
-    color: "#666666",
+    color: COLORS.textSecondary,
     marginTop: 4,
   },
   profileReadyText: {
     fontSize: 20,
-    color: "#28A745",
+    color: COLORS.success,
     marginTop: 16,
     marginBottom: 32,
     textAlign: "center",
   },
   startButton: {
-    backgroundColor: "#28A745",
+    backgroundColor: COLORS.success,
     paddingVertical: 20,
     paddingHorizontal: 64,
-    borderRadius: 12,
+    borderRadius: RADII.full,
     minHeight: 48,
     minWidth: 200,
   },
   startButtonText: {
     fontSize: 22,
-    fontWeight: "bold",
-    color: "#FFFFFF",
+    fontWeight: "700",
+    color: COLORS.buttonText,
     textAlign: "center",
   },
   errorContainer: {
@@ -406,20 +418,20 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: "#DC3545",
+    color: COLORS.error,
     textAlign: "center",
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: "#4A90D9",
+    backgroundColor: COLORS.buttonPrimary,
     paddingVertical: 16,
     paddingHorizontal: 48,
-    borderRadius: 8,
+    borderRadius: RADII.full,
     minHeight: 48,
   },
   retryButtonText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#FFFFFF",
+    color: COLORS.buttonText,
   },
 });

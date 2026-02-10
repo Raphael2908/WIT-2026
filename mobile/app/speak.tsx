@@ -8,21 +8,20 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Camera } from "expo-camera";
 import { useUser } from "../hooks/useUser";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
-import { useFaceMesh } from "../hooks/useFaceMesh";
-import { useLipTracker } from "../hooks/useLipTracker";
+import { useVideoRecorder } from "../hooks/useVideoRecorder";
 import { api } from "../services/api";
 import { API_ROUTES } from "../utils/constants";
+import { COLORS, RADII } from "../utils/theme";
 import SpeakButton from "../components/SpeakButton";
 import DecodedTextDisplay from "../components/DecodedTextDisplay";
 import FeedbackBar from "../components/FeedbackBar";
 import ModalityIndicator from "../components/ModalityIndicator";
 import WaveformVisualizer from "../components/WaveformVisualizer";
 import MiniCameraPreview from "../components/MiniCameraPreview";
-import ShapeSequenceDebug from "../components/ShapeSequenceDebug";
 import type { DecodeResult, FeedbackPayload } from "../types";
 
 type DecodeStatus = "idle" | "listening" | "decoding" | "result";
@@ -31,33 +30,13 @@ export default function SpeakScreen() {
   const router = useRouter();
   const { user } = useUser();
   const { startRecording, stopRecording, isRecording, audioLevel, error: audioError } = useAudioRecorder();
-  const { landmarks, lipLandmarks, isTracking, startCamera, stopCamera } = useFaceMesh();
-  const {
-    startTracking,
-    stopTracking,
-    getShapeSequence,
-    isTracking: isLipTracking,
-    currentShape,
-    currentMetrics,
-  } = useLipTracker(lipLandmarks, landmarks);
+  const videoRecorder = useVideoRecorder();
 
   const [decodeStatus, setDecodeStatus] = useState<DecodeStatus>("idle");
   const [lastResult, setLastResult] = useState<DecodeResult | null>(null);
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Request camera permission and start face mesh on mount
-  useEffect(() => {
-    (async () => {
-      await Camera.requestCameraPermissionsAsync();
-    })();
-    startCamera();
-    return () => {
-      stopCamera();
-    };
-  }, []);
-
-  // Handle audio errors
   useEffect(() => {
     if (audioError) {
       Alert.alert("Audio Error", audioError);
@@ -72,9 +51,10 @@ export default function SpeakScreen() {
       setLastResult(null);
       setFeedbackVisible(false);
 
-      // Start recording and lip tracking
-      await startRecording();
-      startTracking();
+      await Promise.all([
+        startRecording(),
+        videoRecorder.startRecording(),
+      ]);
     } catch (error) {
       console.error("Error starting recording:", error);
       Alert.alert("Error", "Failed to start recording. Please check permissions.");
@@ -86,28 +66,30 @@ export default function SpeakScreen() {
     if (!user || !isRecording) return;
 
     try {
-      // Stop recording and lip tracking
-      const audioUri = await stopRecording();
-      const lipFrames = stopTracking();
+      const [audioUri, videoUri] = await Promise.all([
+        stopRecording(),
+        videoRecorder.stopRecording(),
+      ]);
 
       setDecodeStatus("decoding");
 
-      // Prepare form data
       const formData = new FormData();
       formData.append("audio", {
         uri: audioUri,
         type: "audio/wav",
         name: "audio.wav",
       } as any);
-      formData.append("lip_frames", JSON.stringify(lipFrames));
+      formData.append("video", {
+        uri: videoUri,
+        type: "video/mp4",
+        name: "video.mp4",
+      } as any);
 
-      // Send to backend
       const result = await api.postFormData<DecodeResult>(
         API_ROUTES.DECODE(user.user_id),
         formData
       );
 
-      // Show result
       setLastResult(result);
       setDecodeStatus("result");
       setFeedbackVisible(true);
@@ -174,101 +156,85 @@ export default function SpeakScreen() {
 
   if (!user) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading...</Text>
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientEnd]} style={styles.gradient}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.accent} />
+            <Text style={styles.loadingText}>Loading...</Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   const isBlind = user.vision_impairment_hint === "blind";
   const isPartial = user.vision_impairment_hint === "partial";
   const shouldSpeakAloud = isBlind || isPartial;
-  const shouldShowCamera = !isBlind;
-
-  // Font size adjustments for vision impairment (commented for clarity)
-  // In production, apply fontSize multipliers here based on vision_impairment_hint
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Speech Decoder</Text>
-        <View style={styles.headerButtons}>
-          <Pressable
-            onPress={navigateToHistory}
-            style={styles.iconButton}
-            accessibilityLabel="View history"
-          >
-            <Text style={styles.iconText}>🕐</Text>
-          </Pressable>
-          <Pressable
-            onPress={navigateToSettings}
-            style={styles.iconButton}
-            accessibilityLabel="Open settings"
-          >
-            <Text style={styles.iconText}>⚙️</Text>
-          </Pressable>
-        </View>
-      </View>
+    <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientEnd]} style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
+        {/* Hidden camera for video recording */}
+        <MiniCameraPreview cameraRef={videoRecorder.cameraRef} />
 
-      {/* Main content */}
-      <View style={styles.content}>
-        {/* Decoded text display */}
-        <View style={styles.textDisplayContainer}>
-          <DecodedTextDisplay
-            decodedText={lastResult?.decoded_text || null}
-            partialText={null}
-            rawWhisper={lastResult?.raw_whisper || null}
-            status={decodeStatus}
-            speakAloud={shouldSpeakAloud}
-          />
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Speech Decoder</Text>
+          <View style={styles.headerButtons}>
+            <Pressable
+              onPress={navigateToHistory}
+              style={styles.iconButton}
+              accessibilityLabel="View history"
+            >
+              <Text style={styles.iconText}>☰</Text>
+            </Pressable>
+            <Pressable
+              onPress={navigateToSettings}
+              style={styles.iconButton}
+              accessibilityLabel="Open settings"
+            >
+              <Text style={styles.iconText}>⚙</Text>
+            </Pressable>
+          </View>
         </View>
 
-        {/* Modality indicator */}
-        <View style={styles.modalityContainer}>
-          <ModalityIndicator
-            weights={lastResult?.modality_weights || user.modality_weights}
-            audioActive={true}
-            lipActive={lastResult?.lip_reading_used ?? true}
-          />
-        </View>
-
-        {/* Camera preview and shape debug */}
-        <View style={styles.cameraRow}>
-          <MiniCameraPreview
-            showMesh={isTracking}
-            position="top-right"
-            hidden={!shouldShowCamera}
-            lipLandmarks={lipLandmarks}
-            isTracking={isTracking}
-          />
-          {shouldShowCamera && (
-            <ShapeSequenceDebug
-              currentShape={currentShape}
-              metrics={currentMetrics}
+        {/* Middle content */}
+        <View style={styles.middleContent}>
+          {/* Decoded text card */}
+          <View style={styles.textDisplayContainer}>
+            <DecodedTextDisplay
+              decodedText={lastResult?.decoded_text || null}
+              partialText={null}
+              rawWhisper={lastResult?.raw_whisper || null}
+              status={decodeStatus}
+              speakAloud={shouldSpeakAloud}
             />
-          )}
+          </View>
+
+          {/* Modality indicator */}
+          <View style={styles.modalityContainer}>
+            <ModalityIndicator
+              weights={lastResult?.modality_weights || user.modality_weights}
+              audioActive={true}
+              lipActive={lastResult?.lip_reading_used ?? true}
+            />
+          </View>
         </View>
 
-        {/* Waveform visualizer */}
-        <View style={styles.waveformContainer}>
+        {/* Bottom section */}
+        <View style={styles.bottomSection}>
           <WaveformVisualizer
             audioLevel={audioLevel}
             isActive={isRecording}
           />
-        </View>
-
-        {/* Speak button */}
-        <View style={styles.speakButtonContainer}>
-          <SpeakButton
-            onPressIn={handleSpeakStart}
-            onPressOut={handleSpeakEnd}
-            isActive={decodeStatus === "listening"}
-            disabled={decodeStatus === "decoding" || isSubmitting}
-          />
+          <View style={styles.speakButtonContainer}>
+            <SpeakButton
+              onPressIn={handleSpeakStart}
+              onPressOut={handleSpeakEnd}
+              isActive={decodeStatus === "listening"}
+              disabled={decodeStatus === "decoding" || isSubmitting}
+            />
+          </View>
         </View>
 
         {/* Feedback bar */}
@@ -283,15 +249,17 @@ export default function SpeakScreen() {
             />
           </View>
         )}
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
   loadingContainer: {
     flex: 1,
@@ -301,63 +269,59 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 18,
-    color: "#666666",
+    color: COLORS.textSecondary,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+    paddingVertical: 8,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#000000",
+    fontSize: 22,
+    fontWeight: "700",
+    color: COLORS.text,
   },
   headerButtons: {
     flexDirection: "row",
-    gap: 12,
+    gap: 8,
   },
   iconButton: {
-    width: 48,
-    height: 48,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: RADII.sm,
+    backgroundColor: COLORS.surface,
     justifyContent: "center",
     alignItems: "center",
   },
   iconText: {
-    fontSize: 24,
+    fontSize: 20,
+    color: COLORS.accent,
   },
-  content: {
+  middleContent: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 20,
   },
   textDisplayContainer: {
-    minHeight: 120,
     marginBottom: 20,
   },
   modalityContainer: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
-  cameraRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "flex-end",
-    marginBottom: 16,
-    minHeight: 160,
-  },
-  waveformContainer: {
-    height: 80,
-    marginBottom: 24,
+  bottomSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    alignItems: "center",
   },
   speakButtonContainer: {
     alignItems: "center",
-    marginBottom: 24,
+    marginTop: 8,
   },
   feedbackContainer: {
-    marginTop: "auto",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });

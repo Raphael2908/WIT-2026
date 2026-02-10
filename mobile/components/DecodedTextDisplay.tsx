@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import * as Speech from "expo-speech";
+import { COLORS, RADII } from "../utils/theme";
 
 interface DecodedTextDisplayProps {
   decodedText: string | null;
@@ -41,7 +42,7 @@ export default function DecodedTextDisplay({
   return (
     <View style={styles.container} accessibilityLiveRegion="polite">
       {status === "idle" && (
-        <Text style={styles.placeholder}>Ready to decode</Text>
+        <Text style={styles.placeholder}>Ready</Text>
       )}
 
       {status === "listening" && (
@@ -51,7 +52,7 @@ export default function DecodedTextDisplay({
       {status === "decoding" && (
         <View style={styles.decodingContainer}>
           <Text style={styles.decoding}>Decoding...</Text>
-          <ActivityIndicator size="small" color="#4A90D9" style={styles.spinner} />
+          <ActivityIndicator size="small" color={COLORS.accent} style={styles.spinner} />
         </View>
       )}
 
@@ -74,19 +75,24 @@ export default function DecodedTextDisplay({
 
 const styles = StyleSheet.create({
   container: {
-    minHeight: 120,
+    minHeight: 60,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADII.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   placeholder: {
     fontSize: 18,
-    color: "#9CA3AF",
+    color: COLORS.textSecondary,
     textAlign: "center",
   },
   listening: {
     fontSize: 18,
-    color: "#6B7280",
+    color: COLORS.textSecondary,
     textAlign: "center",
   },
   decodingContainer: {
@@ -96,7 +102,7 @@ const styles = StyleSheet.create({
   },
   decoding: {
     fontSize: 18,
-    color: "#6B7280",
+    color: COLORS.textSecondary,
     textAlign: "center",
   },
   spinner: {
@@ -104,20 +110,20 @@ const styles = StyleSheet.create({
   },
   partial: {
     fontSize: 24,
-    color: "#9CA3AF",
+    color: COLORS.textSecondary,
     textAlign: "center",
     marginBottom: 8,
   },
   decoded: {
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: "bold",
-    color: "#000000",
+    color: COLORS.text,
     textAlign: "center",
     marginBottom: 8,
   },
   rawWhisper: {
     fontSize: 14,
-    color: "#9CA3AF",
+    color: COLORS.textSecondary,
     fontStyle: "italic",
     textAlign: "center",
   },

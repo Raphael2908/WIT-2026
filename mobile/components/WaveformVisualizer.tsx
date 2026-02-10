@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
+import { COLORS } from "../utils/theme";
 
 interface WaveformVisualizerProps {
   audioLevel: number;
@@ -44,7 +45,7 @@ export default function WaveformVisualizer({
             styles.bar,
             {
               height: Math.max(height, INACTIVE_HEIGHT),
-              backgroundColor: isActive ? "#4A90D9" : "#D1D5DB",
+              backgroundColor: isActive ? COLORS.accent : COLORS.inactive,
             },
           ]}
         />
@@ -58,8 +59,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    height: 60,
-    paddingVertical: 8,
+    height: 40,
+    paddingVertical: 4,
   },
   bar: {
     width: 6,

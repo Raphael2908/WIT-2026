@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { COLORS, RADII } from "../utils/theme";
 
 interface PhraseCardProps {
   phrase: {
@@ -15,43 +16,46 @@ export default function PhraseCard({ phrase, status }: PhraseCardProps) {
   const getBackgroundColor = () => {
     switch (status) {
       case "idle":
-        return "#FFFFFF";
+        return COLORS.surface;
       case "recording":
-        return "#DBEAFE";
+        return COLORS.surfaceAlt;
       case "done":
-        return "#D1FAE5";
+        return COLORS.surface;
       default:
-        return "#FFFFFF";
+        return COLORS.surface;
     }
   };
 
   const getBorderColor = () => {
     switch (status) {
       case "idle":
-        return "#E5E7EB";
+        return COLORS.border;
       case "recording":
-        return "#3B82F6";
+        return COLORS.accent;
       case "done":
-        return "#10B981";
+        return COLORS.success;
       default:
-        return "#E5E7EB";
+        return COLORS.border;
     }
   };
 
-  const getDifficultyBadge = () => {
-    switch (phrase.difficulty) {
-      case 1:
-        return { text: "●○○", color: "#9CA3AF" };
-      case 2:
-        return { text: "●●○", color: "#F97316" };
-      case 3:
-        return { text: "●●●", color: "#EF4444" };
-      default:
-        return { text: "●○○", color: "#9CA3AF" };
+  const renderDifficulty = () => {
+    const dots = [];
+    for (let i = 0; i < 3; i++) {
+      dots.push(
+        <View
+          key={i}
+          style={[
+            styles.difficultyDot,
+            {
+              backgroundColor: i < phrase.difficulty ? COLORS.accent : COLORS.inactive,
+            },
+          ]}
+        />
+      );
     }
+    return <View style={styles.difficultyContainer}>{dots}</View>;
   };
-
-  const badge = getDifficultyBadge();
 
   return (
     <View
@@ -64,9 +68,7 @@ export default function PhraseCard({ phrase, status }: PhraseCardProps) {
       ]}
     >
       <Text style={styles.phraseText}>{phrase.text}</Text>
-      <Text style={[styles.difficultyBadge, { color: badge.color }]}>
-        {badge.text}
-      </Text>
+      {renderDifficulty()}
     </View>
   );
 }
@@ -74,7 +76,7 @@ export default function PhraseCard({ phrase, status }: PhraseCardProps) {
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    borderRadius: 16,
+    borderRadius: RADII.md,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -83,9 +85,15 @@ const styles = StyleSheet.create({
     fontSize: 28,
     textAlign: "center",
     marginBottom: 12,
+    color: COLORS.text,
   },
-  difficultyBadge: {
-    fontSize: 16,
-    fontWeight: "600",
+  difficultyContainer: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  difficultyDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
 });
