@@ -1,0 +1,17 @@
+user_id: test_user_123
+category: adaptive_speech_decoding
+confidence: 0.87
+calibration_date: '2025-02-10T14:30:00'
+phoneme_patterns:
+  /k/: often_dropped
+  /d/: often_dropped_word_final
+common_substitutions:
+  quick: quik
+  help: hep
+  need: nee
+weights:
+  audio: 0.7
+  visual: 0.8
+  gesture: 0.5
+confidence_threshold: 0.7
+last_updated: '2025-02-10T14:30:00'
