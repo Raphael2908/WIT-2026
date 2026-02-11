@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from "react";
-<<<<<<< Updated upstream
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
-import * as Speech from "expo-speech";
+import { speakTextAsync, stopSpeechAsync } from "../services/tts";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS, RADII } from "../utils/theme";
-=======
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { speakTextAsync, stopSpeechAsync } from "../services/tts";
->>>>>>> Stashed changes
 
 interface DecodedTextDisplayProps {
   decodedText: string | null;
@@ -52,19 +47,17 @@ export default function DecodedTextDisplay({
     }
   }, [speakAloud, status, decodedText]);
 
-<<<<<<< Updated upstream
-  const handleSpeakAloud = () => {
-    if (decodedText) {
-      Speech.speak(decodedText);
-    }
-  };
-=======
   useEffect(() => {
     return () => {
       void stopSpeechAsync();
     };
   }, []);
->>>>>>> Stashed changes
+
+  const handleSpeakAloud = () => {
+    if (decodedText) {
+      void speakTextAsync(decodedText);
+    }
+  };
 
   return (
     <View style={styles.container} accessibilityLiveRegion="polite">

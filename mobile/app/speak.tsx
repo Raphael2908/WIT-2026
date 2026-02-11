@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,48 +8,39 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Camera } from "expo-camera";
+import * as Speech from "expo-speech";
 import { useUser } from "../hooks/useUser";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
-import { useFaceMesh } from "../hooks/useFaceMesh";
-import { useLipTracker } from "../hooks/useLipTracker";
 import { api } from "../services/api";
+import {
+  getSavedPhrases,
+  savePhrases,
+  getRecentPhrases,
+  addRecentPhrase,
+  getTtsEnabled,
+} from "../services/storage";
 import { API_ROUTES } from "../utils/constants";
+import { COLORS, RADII } from "../utils/theme";
 import SpeakButton from "../components/SpeakButton";
 import DecodedTextDisplay from "../components/DecodedTextDisplay";
 import FeedbackBar from "../components/FeedbackBar";
 import ModalityIndicator from "../components/ModalityIndicator";
 import WaveformVisualizer from "../components/WaveformVisualizer";
-import MiniCameraPreview from "../components/MiniCameraPreview";
-import ShapeSequenceDebug from "../components/ShapeSequenceDebug";
-import type { DecodeResult, FeedbackPayload } from "../types";
-import { getTtsEnabled } from "../services/storage";
+import QuickPhraseBoard from "../components/QuickPhraseBoard";
+import ShowTextModal from "../components/ShowTextModal";
+import type { DecodeResult, FeedbackPayload, QuickPhrase } from "../types";
+
+import * as FileSystem from "expo-file-system/legacy";
 
 type DecodeStatus = "idle" | "listening" | "decoding" | "result";
+type ResultSource = "decode" | "quick_phrase";
 
 export default function SpeakScreen() {
   const router = useRouter();
   const { user } = useUser();
   const { startRecording, stopRecording, isRecording, audioLevel, error: audioError } = useAudioRecorder();
-  const {
-    landmarks,
-    lipLandmarks,
-    isTracking,
-    startCamera,
-    stopCamera,
-    cameraRef,
-    onCameraReady,
-    onCameraMountError,
-  } = useFaceMesh();
-  const {
-    startTracking,
-    stopTracking,
-    getShapeSequence,
-    isTracking: isLipTracking,
-    currentShape,
-    currentMetrics,
-  } = useLipTracker(lipLandmarks, landmarks);
 
   const [decodeStatus, setDecodeStatus] = useState<DecodeStatus>("idle");
   const [lastResult, setLastResult] = useState<DecodeResult | null>(null);
@@ -57,15 +48,24 @@ export default function SpeakScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState<boolean | null>(null);
 
-  // Request camera permission and start face mesh on mount
+  // Quick phrase state
+  const [quickPhraseText, setQuickPhraseText] = useState<string | null>(null);
+  const [resultSource, setResultSource] = useState<ResultSource>("decode");
+  const [savedPhrases, setSavedPhrases] = useState<QuickPhrase[]>([]);
+  const [recentPhrases, setRecentPhrases] = useState<string[]>([]);
+  const [showTextModalVisible, setShowTextModalVisible] = useState(false);
+
+  // Load saved/recent phrases on mount
   useEffect(() => {
-    (async () => {
-      await Camera.requestCameraPermissionsAsync();
-    })();
-    startCamera();
-    return () => {
-      stopCamera();
+    const loadPhrases = async () => {
+      const [saved, recent] = await Promise.all([
+        getSavedPhrases(),
+        getRecentPhrases(),
+      ]);
+      setSavedPhrases(saved);
+      setRecentPhrases(recent);
     };
+    loadPhrases();
   }, []);
 
   // Handle audio errors
@@ -88,17 +88,74 @@ export default function SpeakScreen() {
     };
   }, []);
 
+  const currentDisplayText =
+    resultSource === "quick_phrase"
+      ? quickPhraseText
+      : lastResult?.decoded_text || null;
+
+  const currentRawWhisper =
+    resultSource === "quick_phrase"
+      ? null
+      : lastResult?.raw_whisper || null;
+
+  const handlePhraseSelect = useCallback(async (text: string) => {
+    setQuickPhraseText(text);
+    setResultSource("quick_phrase");
+    setDecodeStatus("result");
+    setLastResult(null);
+    setFeedbackVisible(false);
+
+    Speech.speak(text);
+    await addRecentPhrase(text);
+    setRecentPhrases((prev) => [text, ...prev.filter((p) => p !== text)].slice(0, 20));
+  }, []);
+
+  const handleShowText = useCallback(() => {
+    if (currentDisplayText) {
+      setShowTextModalVisible(true);
+    }
+  }, [currentDisplayText]);
+
+  const handleSavePhraseToFavorites = useCallback(async () => {
+    const text = currentDisplayText;
+    if (!text) return;
+
+    const existing = savedPhrases.find((p) => p.text === text);
+    if (existing) return;
+
+    const newPhrase: QuickPhrase = {
+      id: `custom-${Date.now()}`,
+      text,
+      category: "favorites",
+      isCustom: true,
+      isFavorite: true,
+      usageCount: 1,
+    };
+    const updated = [...savedPhrases, newPhrase];
+    setSavedPhrases(updated);
+    await savePhrases(updated);
+  }, [currentDisplayText, savedPhrases]);
+
+  const handleToggleFavorite = useCallback(async (phraseId: string) => {
+    const updated = savedPhrases.map((p) =>
+      p.id === phraseId ? { ...p, isFavorite: !p.isFavorite } : p
+    );
+    setSavedPhrases(updated);
+    await savePhrases(updated);
+  }, [savedPhrases]);
+
   const handleSpeakStart = async () => {
     if (!user) return;
 
     try {
       setDecodeStatus("listening");
       setLastResult(null);
+      setQuickPhraseText(null);
+      setResultSource("decode");
       setFeedbackVisible(false);
 
-      // Start recording and lip tracking
+      // Start recording
       await startRecording();
-      startTracking();
     } catch (error) {
       console.error("Error starting recording:", error);
       Alert.alert("Error", "Failed to start recording. Please check permissions.");
@@ -110,31 +167,33 @@ export default function SpeakScreen() {
     if (!user || !isRecording) return;
 
     try {
-      // Stop recording and lip tracking
+      // Stop recording
       const audioUri = await stopRecording();
-      const lipFrames = stopTracking();
 
       setDecodeStatus("decoding");
 
-      // Prepare form data
-      const formData = new FormData();
-      formData.append("audio", {
-        uri: audioUri,
-        type: "audio/wav",
-        name: "audio.wav",
-      } as any);
-      formData.append("lip_frames", JSON.stringify(lipFrames));
+      // Read audio as base64
+      const base64Audio = await FileSystem.readAsStringAsync(audioUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-      // Send to backend
-      const result = await api.postFormData<DecodeResult>(
+      // Send to backend as JSON
+      const result = await api.post<DecodeResult>(
         API_ROUTES.DECODE(user.user_id),
-        formData
+        { audio_base64: base64Audio }
       );
 
       // Show result
       setLastResult(result);
+      setResultSource("decode");
       setDecodeStatus("result");
       setFeedbackVisible(true);
+
+      // Add decoded text to recent phrases
+      await addRecentPhrase(result.decoded_text);
+      setRecentPhrases((prev) =>
+        [result.decoded_text, ...prev.filter((p) => p !== result.decoded_text)].slice(0, 20)
+      );
     } catch (error) {
       console.error("Error decoding:", error);
       Alert.alert("Decode Error", "Failed to decode speech. Please try again.");
@@ -207,14 +266,7 @@ export default function SpeakScreen() {
     );
   }
 
-  const isBlind = user.vision_impairment_hint === "blind";
-  const isPartial = user.vision_impairment_hint === "partial";
-  const defaultTts = isBlind || isPartial;
-  const shouldSpeakAloud = ttsEnabled ?? defaultTts;
-  const shouldShowCamera = !isBlind;
-
-  // Font size adjustments for vision impairment (commented for clarity)
-  // In production, apply fontSize multipliers here based on vision_impairment_hint
+  const shouldSpeakAloud = ttsEnabled ?? true;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -227,69 +279,66 @@ export default function SpeakScreen() {
             style={styles.iconButton}
             accessibilityLabel="View history"
           >
-            <Text style={styles.iconText}>🕐</Text>
+            <Ionicons name="menu" size={24} color={COLORS.text} />
           </Pressable>
           <Pressable
             onPress={navigateToSettings}
             style={styles.iconButton}
             accessibilityLabel="Open settings"
           >
-            <Text style={styles.iconText}>⚙️</Text>
+            <Ionicons name="settings-outline" size={24} color={COLORS.text} />
           </Pressable>
         </View>
       </View>
 
-      {/* Main content */}
-      <View style={styles.content}>
+      {/* Middle content */}
+      <View style={styles.middleContent}>
         {/* Decoded text display */}
         <View style={styles.textDisplayContainer}>
           <DecodedTextDisplay
-            decodedText={lastResult?.decoded_text || null}
+            decodedText={currentDisplayText}
             partialText={null}
-            rawWhisper={lastResult?.raw_whisper || null}
+            rawWhisper={currentRawWhisper}
             status={decodeStatus}
-            speakAloud={shouldSpeakAloud}
+            speakAloud={shouldSpeakAloud && resultSource === "decode"}
+            onShowText={handleShowText}
           />
         </View>
 
-        {/* Modality indicator */}
-        <View style={styles.modalityContainer}>
-          <ModalityIndicator
-            weights={lastResult?.modality_weights || user.modality_weights}
-            audioActive={true}
-            lipActive={lastResult?.lip_reading_used ?? true}
-          />
-        </View>
-
-        {/* Camera preview and shape debug */}
-        <View style={styles.cameraRow}>
-          <MiniCameraPreview
-            showMesh={isTracking}
-            position="top-right"
-            hidden={!shouldShowCamera}
-            lipLandmarks={lipLandmarks}
-            isTracking={isTracking}
-            cameraRef={cameraRef}
-            onCameraReady={onCameraReady}
-            onCameraMountError={onCameraMountError}
-          />
-          {shouldShowCamera && (
-            <ShapeSequenceDebug
-              currentShape={currentShape}
-              metrics={currentMetrics}
+        {/* Modality indicator — only show for decoded results */}
+        {resultSource === "decode" && (
+          <View style={styles.modalityContainer}>
+            <ModalityIndicator
+              weights={lastResult?.modality_weights || user.modality_weights}
+              audioActive={true}
+              lipActive={lastResult?.lip_reading_used ?? true}
             />
-          )}
-        </View>
+          </View>
+        )}
+        {resultSource === "quick_phrase" && decodeStatus === "result" && (
+          <View style={styles.quickPhraseIndicator}>
+            <Ionicons name="chatbubble-ellipses-outline" size={14} color={COLORS.textSecondary} />
+            <Text style={styles.quickPhraseLabel}>Quick Phrase</Text>
+          </View>
+        )}
 
-        {/* Waveform visualizer */}
-        <View style={styles.waveformContainer}>
-          <WaveformVisualizer
-            audioLevel={audioLevel}
-            isActive={isRecording}
+        {/* Quick Phrase Board */}
+        <View style={styles.phraseBoardContainer}>
+          <QuickPhraseBoard
+            onPhraseSelect={handlePhraseSelect}
+            recentPhrases={recentPhrases}
+            savedPhrases={savedPhrases}
+            onToggleFavorite={handleToggleFavorite}
           />
         </View>
+      </View>
 
-        {/* Speak button */}
+      {/* Bottom section */}
+      <View style={styles.bottomSection}>
+        <WaveformVisualizer
+          audioLevel={audioLevel}
+          isActive={isRecording}
+        />
         <View style={styles.speakButtonContainer}>
           <SpeakButton
             onPressIn={handleSpeakStart}
@@ -298,20 +347,28 @@ export default function SpeakScreen() {
             disabled={decodeStatus === "decoding" || isSubmitting}
           />
         </View>
-
-        {/* Feedback bar */}
-        {feedbackVisible && (
-          <View style={styles.feedbackContainer}>
-            <FeedbackBar
-              onConfirm={handleConfirm}
-              onEdit={() => {}}
-              visible={feedbackVisible}
-              initialText={lastResult?.decoded_text || ""}
-              onSubmitEdit={handleEdit}
-            />
-          </View>
-        )}
       </View>
+
+      {/* Feedback bar — only for decoded results */}
+      {feedbackVisible && resultSource === "decode" && (
+        <View style={styles.feedbackContainer}>
+          <FeedbackBar
+            onConfirm={handleConfirm}
+            onEdit={() => {}}
+            onSave={handleSavePhraseToFavorites}
+            visible={feedbackVisible}
+            initialText={lastResult?.decoded_text || ""}
+            onSubmitEdit={handleEdit}
+          />
+        </View>
+      )}
+
+      {/* Show Text Modal */}
+      <ShowTextModal
+        text={currentDisplayText || ""}
+        visible={showTextModalVisible}
+        onClose={() => setShowTextModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -319,7 +376,6 @@ export default function SpeakScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
   loadingContainer: {
     flex: 1,
@@ -329,63 +385,71 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 18,
-    color: "#666666",
+    color: COLORS.textSecondary,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+    paddingVertical: 8,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#000000",
+    fontSize: 22,
+    fontWeight: "700",
+    color: COLORS.text,
   },
   headerButtons: {
     flexDirection: "row",
-    gap: 12,
+    gap: 8,
   },
   iconButton: {
-    width: 48,
-    height: 48,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: RADII.sm,
+    backgroundColor: COLORS.surface,
     justifyContent: "center",
     alignItems: "center",
   },
-  iconText: {
-    fontSize: 24,
-  },
-  content: {
+  middleContent: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 20,
   },
   textDisplayContainer: {
-    minHeight: 120,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   modalityContainer: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
-  cameraRow: {
+  quickPhraseIndicator: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "flex-end",
-    marginBottom: 16,
-    minHeight: 160,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginBottom: 8,
+    paddingVertical: 4,
   },
-  waveformContainer: {
-    height: 80,
-    marginBottom: 24,
+  quickPhraseLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: "500",
+  },
+  phraseBoardContainer: {
+    marginBottom: 8,
+  },
+  bottomSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    alignItems: "center",
   },
   speakButtonContainer: {
     alignItems: "center",
-    marginBottom: 24,
+    marginTop: 8,
   },
   feedbackContainer: {
-    marginTop: "auto",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });
