@@ -1,7 +1,13 @@
 from .request_model import (
     CalibrationRequest,
     CorrectionRequest,
-    GestureSignal,
+    DecodeRequest,
+    DecodeResult,
+    FeedbackPayload,
+    FeedbackResult,
+    LipFrame,
+    LipMatch,
+    LipSignature,
     RecognitionRequest,
 )
 from .user_profile import ImpairmentCategory, ModalityWeights, UserProfile
@@ -9,8 +15,14 @@ from .user_profile import ImpairmentCategory, ModalityWeights, UserProfile
 __all__ = [
     "CalibrationRequest",
     "CorrectionRequest",
-    "GestureSignal",
+    "DecodeRequest",
+    "DecodeResult",
+    "FeedbackPayload",
+    "FeedbackResult",
     "ImpairmentCategory",
+    "LipFrame",
+    "LipMatch",
+    "LipSignature",
     "ModalityWeights",
     "RecognitionRequest",
     "UserProfile",

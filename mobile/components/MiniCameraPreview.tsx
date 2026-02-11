@@ -1,27 +1,18 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { CameraView } from "expo-camera";
-import FaceMeshOverlay from "./FaceMeshOverlay";
-import { LipPoint } from "../types";
-
 
 interface MiniCameraPreviewProps {
-  showMesh: boolean;
   position: "top-right" | "bottom-left";
   hidden: boolean;
-  lipLandmarks: LipPoint[] | null;
-  isTracking: boolean;
   cameraRef?: React.RefObject<any>;
   onCameraReady?: () => void;
   onCameraMountError?: (error: unknown) => void;
 }
 
 export default function MiniCameraPreview({
-  showMesh,
   position,
   hidden,
-  lipLandmarks,
-  isTracking,
   cameraRef,
   onCameraReady,
   onCameraMountError,
@@ -40,14 +31,6 @@ export default function MiniCameraPreview({
         onCameraReady={onCameraReady}
         onMountError={onCameraMountError}
       />
-      {showMesh && !hidden && (
-        <FaceMeshOverlay
-          landmarks={lipLandmarks}
-          containerWidth={120}
-          containerHeight={160}
-          isTracking={isTracking}
-        />
-      )}
     </View>
   );
 }

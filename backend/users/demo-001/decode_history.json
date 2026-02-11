@@ -1,0 +1,252 @@
+[
+  {
+    "decode_id": "7e10fd1f-3006-4f64-8e6d-d2664813b570",
+    "decoded_text": "IV water",
+    "raw_whisper": "IV water",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:26:12.414164"
+  },
+  {
+    "decode_id": "bab05e9b-a398-4169-8f9b-2397f0124ba3",
+    "decoded_text": "I want to go home",
+    "raw_whisper": "I wanna go home",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:26:36.389870"
+  },
+  {
+    "decode_id": "39c35cba-e2c5-470b-9593-b26469a11318",
+    "decoded_text": "You",
+    "raw_whisper": "You",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:26:50.578428"
+  },
+  {
+    "decode_id": "5f1321ba-2cef-48a5-8c4f-a52382846d3a",
+    "decoded_text": "You",
+    "raw_whisper": "You",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:29:27.182900"
+  },
+  {
+    "decode_id": "744ece78-a9e1-430d-a402-101a9f11888d",
+    "decoded_text": "Oh, hello, hello, hello.",
+    "raw_whisper": "Oh, hello, hello, hello.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": "Oh, hello, hello, no",
+    "created_at": "2026-02-10T21:29:40.498961"
+  },
+  {
+    "decode_id": "99a6c958-736f-4eef-9bed-4dee5432ad09",
+    "decoded_text": "Where is my knife case?",
+    "raw_whisper": "Where is my knife case?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:30:22.252043"
+  },
+  {
+    "decode_id": "366948e5-273b-421c-89cb-d0223e64ceb5",
+    "decoded_text": "Where is the rest of the loot?",
+    "raw_whisper": "Where is the rest of the loot?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:30:43.294309"
+  },
+  {
+    "decode_id": "47ca4698-61ea-4b1c-9b75-ce4a7cfdd256",
+    "decoded_text": "Where is the nearest toilet.",
+    "raw_whisper": "There is the nearest toilet.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:30:59.883345"
+  },
+  {
+    "decode_id": "61a148ae-c664-4d47-82f1-9237f4f55fb1",
+    "decoded_text": "I need my water bottle.",
+    "raw_whisper": "I need my water bottle.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:31:16.570161"
+  },
+  {
+    "decode_id": "bda30b1d-7fa4-4ea1-83a3-0d5773e7c656",
+    "decoded_text": "Can you help me comment",
+    "raw_whisper": "Can you help me comment",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:31:45.959574"
+  },
+  {
+    "decode_id": "b3aeca54-98dc-45bd-bc1e-dd717d31600e",
+    "decoded_text": "Can you help me find my black shirt?",
+    "raw_whisper": "Can you help me fur fur fur fur my black shirt?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:32:08.684479"
+  },
+  {
+    "decode_id": "ef2cae6c-6030-4683-899d-f9e3f112812c",
+    "decoded_text": "Is this the McDonald's?",
+    "raw_whisper": "Is this the McDonald's?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:32:47.827068"
+  },
+  {
+    "decode_id": "71ec7a3b-0908-4bfd-b452-d56d8e91decc",
+    "decoded_text": "I want to go home",
+    "raw_whisper": "I want to go home",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:45:15.751489"
+  },
+  {
+    "decode_id": "6a5220b2-6835-416a-b5e7-bd426408668c",
+    "decoded_text": "I want to go home. Please help me go home.",
+    "raw_whisper": "I want to go home. Please help me go home.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:46:06.085685"
+  },
+  {
+    "decode_id": "0c352af2-25b7-4200-8a5c-6ad4089c22e7",
+    "decoded_text": "Today. I will eat here chicken, beef, vegetables and an egg.",
+    "raw_whisper": "Tudor. I will eat here chicken, beef, vegetables and an egg.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:46:54.992855"
+  },
+  {
+    "decode_id": "ff35925f-10da-49be-9bf3-666d59dddf5f",
+    "decoded_text": "Can I get the cheeseburger and the three chicken nuggets on the side with a total of $10?",
+    "raw_whisper": "Can I get the cheeseburger and the three chicken nuggets on the side with a total of $10?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:50:52.218872"
+  },
+  {
+    "decode_id": "c51e5427-6916-4a4f-86f6-ccc2b7a55497",
+    "decoded_text": "Do you know where is the nearest Watsum?",
+    "raw_whisper": "Do you know where is the nearest Watsum?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:51:22.437610"
+  },
+  {
+    "decode_id": "17b86f64-41b7-469d-966a-a87ba65c8d8b",
+    "decoded_text": "Do you know where's the nearest toilet?",
+    "raw_whisper": "Do you know where's the nearest toilet?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:51:48.920969"
+  },
+  {
+    "decode_id": "8700ce30-0b59-4a0c-85a8-2dbd92e60d4e",
+    "decoded_text": "Do you know where the nearest toilet is?",
+    "raw_whisper": "Do you know where the nearest toilet is?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:52:16.965255"
+  },
+  {
+    "decode_id": "e2f2c457-7c0c-46fc-b750-f39c5618ad48",
+    "decoded_text": "I want to go to COM-COM-COM 1",
+    "raw_whisper": "I want to go to COM-COM-COM 1",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:53:24.779185"
+  },
+  {
+    "decode_id": "6d43017f-ae29-4193-9290-c4cfeccf78b8",
+    "decoded_text": "When is the next next shuttle to the bus?",
+    "raw_whisper": "When is the next next shuttle to the bus?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:54:01.090443"
+  },
+  {
+    "decode_id": "6bd0a70b-94fb-418d-a705-ef0288acb214",
+    "decoded_text": "How do you implement Two's Complement in this scenario?",
+    "raw_whisper": "How do you implement Tooth Complement in this scenario?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:55:07.966518"
+  },
+  {
+    "decode_id": "e952f434-8ada-44ef-b207-af6530a849a1",
+    "decoded_text": "I want to go to toilet",
+    "raw_whisper": "I want to go to toilet",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T21:56:20.305123"
+  },
+  {
+    "decode_id": "1e7cd02a-3342-4ed3-b8f0-ee7a6cb3ada4",
+    "decoded_text": "Can you help me find my wallet?",
+    "raw_whisper": "Can you help me find my wallet?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": null,
+    "created_at": "2026-02-10T22:04:51.383705"
+  },
+  {
+    "decode_id": "f0097ad2-8246-40ee-8d94-ab25e64bfafd",
+    "decoded_text": "Do you know what bus to take to go to NUS?",
+    "raw_whisper": "Do you know what bus to take to go to NUS?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-10T22:05:19.463446"
+  }
+]

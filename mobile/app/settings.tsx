@@ -14,11 +14,8 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useUser } from "../hooks/useUser";
-<<<<<<< Updated upstream
 import { COLORS, RADII } from "../utils/theme";
-=======
 import { getTtsEnabled, saveTtsEnabled } from "../services/storage";
->>>>>>> Stashed changes
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -171,44 +168,9 @@ export default function SettingsScreen() {
             </View>
           </View>
 
-<<<<<<< Updated upstream
           {/* MODALITIES Section */}
           <View style={styles.section}>
             <Text style={styles.sectionHeader}>Modalities</Text>
-=======
-        {/* ACCESSIBILITY Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionHeader}>ACCESSIBILITY</Text>
-
-          <View style={styles.card}>
-            <Pressable
-              style={styles.buttonSecondary}
-              onPress={handleOpenTtsTest}
-              accessibilityLabel="Open interactive text to speech test"
-            >
-              <Text style={styles.buttonSecondaryText}>Open TTS Test Screen</Text>
-            </Pressable>
-            <View style={styles.switchRow}>
-              <View style={styles.switchTextGroup}>
-                <Text style={styles.label}>Speak decoded text aloud</Text>
-                <Text style={styles.helperText}>
-                  Recommended for blind or partial vision impairment.
-                </Text>
-              </View>
-              <Switch
-                value={ttsEnabled}
-                onValueChange={handleToggleTts}
-                disabled={!ttsLoaded}
-                accessibilityLabel="Toggle text-to-speech for decoded results"
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* ABOUT Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionHeader}>ABOUT</Text>
->>>>>>> Stashed changes
 
             <View style={styles.card}>
               <View style={styles.cardRow}>
@@ -223,6 +185,35 @@ export default function SettingsScreen() {
                 <Text style={styles.valueText}>
                   {user.modality_weights.lip.toFixed(2)}
                 </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* ACCESSIBILITY Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionHeader}>Accessibility</Text>
+
+            <View style={styles.card}>
+              <Pressable
+                style={styles.buttonSecondary}
+                onPress={handleOpenTtsTest}
+                accessibilityLabel="Open interactive text to speech test"
+              >
+                <Text style={styles.buttonSecondaryText}>Open TTS Test Screen</Text>
+              </Pressable>
+              <View style={styles.switchRow}>
+                <View style={styles.switchTextGroup}>
+                  <Text style={styles.label}>Speak decoded text aloud</Text>
+                  <Text style={styles.helperText}>
+                    Recommended for blind or partial vision impairment.
+                  </Text>
+                </View>
+                <Switch
+                  value={ttsEnabled}
+                  onValueChange={handleToggleTts}
+                  disabled={!ttsLoaded}
+                  accessibilityLabel="Toggle text-to-speech for decoded results"
+                />
               </View>
             </View>
           </View>

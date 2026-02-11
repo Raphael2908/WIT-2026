@@ -13,7 +13,6 @@ import { useUser } from "../hooks/useUser";
 import { useCalibration } from "../hooks/useCalibration";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
 import { useFaceMesh } from "../hooks/useFaceMesh";
-import { useLipTracker } from "../hooks/useLipTracker";
 import PhraseCard from "../components/PhraseCard";
 import CalibrationProgress from "../components/CalibrationProgress";
 import RecordButton from "../components/RecordButton";
@@ -28,7 +27,6 @@ export default function CalibrationScreen() {
   const calibration = useCalibration(userId);
   const audioRecorder = useAudioRecorder();
   const faceMesh = useFaceMesh();
-  const lipTracker = useLipTracker(faceMesh.lipLandmarks, faceMesh.landmarks);
 
   const [recordingState, setRecordingState] = useState<
     "idle" | "recording" | "processing"
@@ -46,16 +44,14 @@ export default function CalibrationScreen() {
     setRecordingState("recording");
     setShowResult(false);
     await audioRecorder.startRecording();
-    lipTracker.startTracking();
   };
 
   const handlePressOut = async () => {
     setRecordingState("processing");
     const audioUri = await audioRecorder.stopRecording();
-    const lipFrames = lipTracker.stopTracking();
 
     try {
-      await calibration.submitRecording(audioUri, lipFrames);
+      await calibration.submitRecording(audioUri);
       setShowResult(true);
       setRecordingState("idle");
     } catch (err) {
@@ -195,11 +191,8 @@ export default function CalibrationScreen() {
         )}
 
         <MiniCameraPreview
-          showMesh={true}
           position="top-right"
           hidden={user?.vision_impairment_hint === "blind"}
-          lipLandmarks={faceMesh.lipLandmarks}
-          isTracking={faceMesh.isTracking}
           cameraRef={faceMesh.cameraRef}
           onCameraReady={faceMesh.onCameraReady}
           onCameraMountError={faceMesh.onCameraMountError}

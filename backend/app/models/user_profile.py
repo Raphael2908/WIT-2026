@@ -17,37 +17,41 @@ class ModalityWeights(BaseModel):
     """Weights for different input modalities."""
 
     audio: float = 0.7
-    visual: float = 0.8
-    gesture: float = 0.5
+    lip: float = 0.8
 
 
 class UserProfile(BaseModel):
     """User profile data structure."""
 
     user_id: str
-    category: ImpairmentCategory
-    confidence: float = Field(ge=0.0, le=1.0)
-    calibration_date: datetime = Field(default_factory=datetime.utcnow)
+    display_name: str = ""
+    vision_impairment_hint: Optional[str] = None
+    speech_impairment_hint: Optional[str] = None
+    category: ImpairmentCategory = ImpairmentCategory.ADAPTIVE_SPEECH_DECODING
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    calibration_count: int = 0
+    avg_whisper_confidence: float = 0.0
     phoneme_patterns: dict[str, str] = Field(default_factory=dict)
     common_substitutions: dict[str, str] = Field(default_factory=dict)
-    weights: ModalityWeights = Field(default_factory=ModalityWeights)
+    modality_weights: ModalityWeights = Field(default_factory=ModalityWeights)
     confidence_threshold: float = 0.7
-    last_updated: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     @classmethod
     def get_default_weights(cls, category: ImpairmentCategory) -> ModalityWeights:
         """Get default modality weights based on impairment category."""
         weights_map = {
             ImpairmentCategory.ADAPTIVE_SPEECH_DECODING: ModalityWeights(
-                audio=0.7, visual=0.8, gesture=0.5
+                audio=0.7, lip=0.8
             ),
             ImpairmentCategory.MULTIMODAL_INPUT_FUSION: ModalityWeights(
-                audio=0.5, visual=0.9, gesture=0.7
+                audio=0.5, lip=0.9
             ),
             ImpairmentCategory.REHABILITATION_MODE: ModalityWeights(
-                audio=0.8, visual=0.6, gesture=0.5
+                audio=0.8, lip=0.6
             ),
         }
         return weights_map.get(
-            category, ModalityWeights(audio=0.7, visual=0.8, gesture=0.5)
+            category, ModalityWeights(audio=0.7, lip=0.8)
         )

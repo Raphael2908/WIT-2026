@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.calibration import router as calibration_router
-from app.api import lip_stream_router
+from app.api import correction_router, lip_stream_router, recognition_router, users_router, websocket_stream_router
 
 app = FastAPI(title="WIT-2026 Backend")
 
@@ -15,7 +15,11 @@ app.add_middleware(
 )
 
 app.include_router(calibration_router)
+app.include_router(recognition_router)
+app.include_router(correction_router)
 app.include_router(lip_stream_router)
+app.include_router(users_router)
+app.include_router(websocket_stream_router)
 
 @app.get("/")
 def root():

@@ -1,10 +1,9 @@
-"""Multimodal fusion service for combining audio, lip reading, and gestures."""
+"""Multimodal fusion service for combining audio and lip reading."""
 
 import logging
 from dataclasses import dataclass
 from typing import Optional
 
-from app.models.request_model import GestureSignal
 from app.models.user_profile import ModalityWeights
 
 logger = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ class FusionResult:
 
 
 class FusionService:
-    """Fuses audio transcription with lip reading and gesture signals."""
+    """Fuses audio transcription with lip reading."""
 
     # Default confidence for lip reading text (frontend doesn't provide confidence)
     LIP_READING_DEFAULT_CONFIDENCE = 0.8
@@ -32,7 +31,6 @@ class FusionService:
         audio_confidence: float,
         weights: ModalityWeights,
         lip_reading_text: Optional[str] = None,
-        gesture_signal: Optional[GestureSignal] = None,
     ) -> FusionResult:
         """Fuse multimodal inputs into a single result.
 
@@ -41,7 +39,6 @@ class FusionService:
             audio_confidence: Confidence score from Whisper (0.0-1.0).
             weights: User's category-specific modality weights.
             lip_reading_text: Optional text from lip reading (frontend).
-            gesture_signal: Optional gesture override signal.
 
         Returns:
             FusionResult with fused text, confidence, and source tracking.
@@ -60,18 +57,18 @@ class FusionService:
         # If lip reading is provided, compare weighted confidences
         if lip_reading_text:
             sources_used.append("lip_reading")
-            weighted_visual = self.LIP_READING_DEFAULT_CONFIDENCE * weights.visual
+            weighted_lip = self.LIP_READING_DEFAULT_CONFIDENCE * weights.lip
 
             logger.info(
                 f"Fusion comparison - Audio: {weighted_audio:.2f} (raw: {audio_confidence:.2f} * weight: {weights.audio}), "
-                f"Lip reading: {weighted_visual:.2f} (raw: {self.LIP_READING_DEFAULT_CONFIDENCE} * weight: {weights.visual})"
+                f"Lip reading: {weighted_lip:.2f} (raw: {self.LIP_READING_DEFAULT_CONFIDENCE} * weight: {weights.lip})"
             )
 
             # Select source with higher weighted confidence
-            if weighted_visual > weighted_audio:
+            if weighted_lip > weighted_audio:
                 primary_source = "lip_reading"
                 text = lip_reading_text
-                confidence = weighted_visual
+                confidence = weighted_lip
                 logger.info(f"Selected LIP READING as primary source: '{lip_reading_text}'")
             else:
                 logger.info(f"Selected AUDIO as primary source: '{audio_text}'")
@@ -82,13 +79,6 @@ class FusionService:
                 logger.warning(
                     f"Mismatch detected - Audio: '{audio_text}' vs Lip: '{lip_reading_text}' -> flagged for review"
                 )
-
-        # Apply gesture overrides
-        if gesture_signal:
-            sources_used.append("gesture")
-            text, confidence, needs_review = self._apply_gesture(
-                text, confidence, needs_review, gesture_signal
-            )
 
         logger.info(
             f"Fusion result - Primary: {primary_source}, Text: '{text}', "
@@ -102,41 +92,3 @@ class FusionService:
             primary_source=primary_source,
             needs_review=needs_review,
         )
-
-    def _apply_gesture(
-        self,
-        text: str,
-        confidence: float,
-        needs_review: bool,
-        gesture: GestureSignal,
-    ) -> tuple[str, float, bool]:
-        """Apply gesture signal overrides.
-
-        Args:
-            text: Current fused text.
-            confidence: Current confidence score.
-            needs_review: Current review flag.
-            gesture: Gesture signal to apply.
-
-        Returns:
-            Tuple of (modified_text, modified_confidence, modified_needs_review).
-        """
-        if gesture == GestureSignal.CONFIRM:
-            # User confirms - boost confidence
-            confidence = min(confidence + 0.1, 1.0)
-            needs_review = False  # User confirmed, no review needed
-            logger.info(f"CONFIRM gesture: boosted confidence to {confidence:.2f}")
-
-        elif gesture == GestureSignal.NEGATE:
-            # User negates - flag for review, reduce confidence
-            confidence = max(confidence - 0.2, 0.0)
-            needs_review = True
-            logger.info(f"NEGATE gesture: reduced confidence to {confidence:.2f}, flagged for review")
-
-        elif gesture == GestureSignal.PUNCTUATE:
-            # User signals punctuation - add period if not present
-            if text and not text.rstrip().endswith(('.', '!', '?')):
-                text = text.rstrip() + '.'
-                logger.info(f"PUNCTUATE gesture: added period -> '{text}'")
-
-        return text, confidence, needs_review
