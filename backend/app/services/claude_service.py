@@ -6,6 +6,7 @@ from anthropic import AsyncAnthropic
 
 from app.config.prompts import (
     CALIBRATION_PROMPT,
+    CHINESE_CORRECTION_PROMPT,
     CORRECTION_LEARNING_PROMPT,
     RECOGNITION_PROMPT,
 )
@@ -174,6 +175,24 @@ class ClaudeService:
             patterns_learned=data.get("patterns_learned", 0),
             analysis=data.get("analysis", ""),
         )
+
+    async def correct_chinese_text(self, raw_chinese: str) -> str:
+        """Correct raw Chinese transcription to clean Simplified Chinese.
+
+        Args:
+            raw_chinese: Raw Chinese text from Whisper transcription.
+
+        Returns:
+            Corrected Simplified Chinese text.
+
+        Raises:
+            ClaudeServiceError: If correction fails.
+        """
+        if not raw_chinese or not raw_chinese.strip():
+            return raw_chinese
+
+        prompt = CHINESE_CORRECTION_PROMPT.format(raw_chinese=raw_chinese)
+        return await self._send_message(prompt)
 
     async def _send_message(self, prompt: str) -> str:
         """Send a message to Claude and get the response.

@@ -120,6 +120,8 @@ class DecodeResult(BaseModel):
     modality_weights: dict[str, float]
     lip_matches: list[LipMatch] = Field(default_factory=list)
     processing_time_ms: int = 0
+    detected_language: str = "en"
+    chinese_text: Optional[str] = None
 
 
 # === Feedback models ===
@@ -165,6 +167,8 @@ class DecodeHistoryEntry(BaseModel):
     feedback_status: str = "pending"
     corrected_text: Optional[str] = None
     created_at: str
+    detected_language: str = "en"
+    chinese_text: Optional[str] = None
 
 
 # === Calibration (new multi-step) ===

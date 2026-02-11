@@ -13,6 +13,10 @@ from app.utils.audio_processing import (
 )
 from app.utils.text_processing import calculate_similarity
 
+MANDARIN_CODES = frozenset({"chinese", "zh"})
+MALAY_CODES = frozenset({"malay", "ms"})
+NON_ENGLISH_CODES = MANDARIN_CODES | MALAY_CODES
+
 
 class WhisperServiceError(Exception):
     """Exception raised for Whisper API failures."""
@@ -28,6 +32,7 @@ class TranscriptionResult:
     confidence: float
     language: str
     duration_ms: Optional[int] = None
+    translated_text: Optional[str] = None  # English translation when non-English detected
 
 
 class WhisperService:
@@ -40,12 +45,35 @@ class WhisperService:
         self.model = settings.whisper_model
         self.default_language = settings.whisper_language
 
+    async def _translate_file(self, file_path: str) -> str:
+        """Translate audio to English using OpenAI translations endpoint.
+
+        Args:
+            file_path: Path to the audio file.
+
+        Returns:
+            English translation text.
+
+        Raises:
+            WhisperServiceError: If translation fails.
+        """
+        try:
+            with open(file_path, "rb") as audio_file:
+                response = await self.client.audio.translations.create(
+                    model=self.model,
+                    file=audio_file,
+                )
+            return response.text
+        except Exception as e:
+            raise WhisperServiceError(f"Whisper API translation failed: {e}")
+
     async def transcribe_base64_audio(
         self,
         base64_audio: str,
         language: Optional[str] = None,
         prompt: Optional[str] = None,
         expected_text: Optional[str] = None,
+        auto_detect: bool = False,
     ) -> TranscriptionResult:
         """Transcribe base64 encoded audio.
 
@@ -54,6 +82,7 @@ class WhisperService:
             language: Language code (default: from settings).
             prompt: Optional prompt to guide transcription.
             expected_text: Optional expected text for confidence estimation.
+            auto_detect: If True, omit language param to let Whisper auto-detect.
 
         Returns:
             TranscriptionResult with text, confidence, language, and duration.
@@ -68,12 +97,19 @@ class WhisperService:
             wav_bytes = convert_to_wav(audio_bytes)
             temp_file_path = save_audio_to_temp_file(wav_bytes)
 
-            return await self.transcribe_file(
+            result = await self.transcribe_file(
                 file_path=temp_file_path,
                 language=language,
                 prompt=prompt,
                 expected_text=expected_text,
+                auto_detect=auto_detect,
             )
+
+            # If non-English detected, translate the audio to English
+            if auto_detect and result.language in NON_ENGLISH_CODES:
+                result.translated_text = await self._translate_file(temp_file_path)
+
+            return result
         finally:
             if temp_file_path:
                 cleanup_temp_file(temp_file_path)
@@ -84,6 +120,7 @@ class WhisperService:
         language: Optional[str] = None,
         prompt: Optional[str] = None,
         expected_text: Optional[str] = None,
+        auto_detect: bool = False,
     ) -> TranscriptionResult:
         """Transcribe audio from a file.
 
@@ -92,6 +129,7 @@ class WhisperService:
             language: Language code (default: from settings).
             prompt: Optional prompt to guide transcription.
             expected_text: Optional expected text for confidence estimation.
+            auto_detect: If True, omit language param to let Whisper auto-detect.
 
         Returns:
             TranscriptionResult with text, confidence, language, and duration.
@@ -100,13 +138,18 @@ class WhisperService:
             WhisperServiceError: If transcription fails.
         """
         try:
+            kwargs = {
+                "model": self.model,
+                "prompt": prompt,
+                "response_format": "verbose_json",
+            }
+            if not auto_detect:
+                kwargs["language"] = language or self.default_language
+
             with open(file_path, "rb") as audio_file:
                 response = await self.client.audio.transcriptions.create(
-                    model=self.model,
                     file=audio_file,
-                    language=language or self.default_language,
-                    prompt=prompt,
-                    response_format="verbose_json",
+                    **kwargs,
                 )
 
             text = response.text

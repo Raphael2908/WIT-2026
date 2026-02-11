@@ -1,0 +1,14 @@
+[
+  {
+    "decode_id": "286d84f7-b9ce-470f-ae4a-697c2ab1c8e4",
+    "decoded_text": "Ciao, boy!",
+    "raw_whisper": "Tchap\u00e1, boi!",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T09:36:35.637921",
+    "detected_language": "en",
+    "chinese_text": null
+  }
+]

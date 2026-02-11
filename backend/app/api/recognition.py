@@ -10,7 +10,12 @@ from app.models.request_model import DecodeRequest, DecodeResult, LipFrame, LipM
 from app.services.claude_service import ClaudeService, ClaudeServiceError
 from app.services.fusion_service import FusionService
 from app.services.lip_matching_service import frames_to_shape_sequence, find_top_lip_matches
-from app.services.whisper_service import WhisperService, WhisperServiceError
+from app.services.whisper_service import (
+    MANDARIN_CODES,
+    NON_ENGLISH_CODES,
+    WhisperService,
+    WhisperServiceError,
+)
 from app.storage.file_storage import FileManager, FileManagerError
 
 router = APIRouter()
@@ -51,13 +56,28 @@ async def decode(user_id: str, request: DecodeRequest) -> DecodeResult:
         except FileManagerError:
             pass  # Non-critical; profile lives in memory for this request
 
-    # Transcribe audio with Whisper
+    # Transcribe audio with Whisper (auto-detect language)
     try:
         transcription = await whisper_service.transcribe_base64_audio(
             base64_audio=request.audio_base64,
+            auto_detect=True,
         )
     except WhisperServiceError as e:
         raise HTTPException(status_code=500, detail=f"Transcription failed: {e}")
+
+    # Handle non-English detection: preserve Chinese text for Mandarin, use English translation for pipeline
+    detected_language = transcription.language if transcription.language in NON_ENGLISH_CODES else "en"
+    chinese_text: Optional[str] = None
+    if detected_language in NON_ENGLISH_CODES:
+        if detected_language in MANDARIN_CODES:
+            # Correct raw Chinese transcription with Claude
+            try:
+                chinese_text = await claude_service.correct_chinese_text(transcription.text)
+            except Exception:
+                chinese_text = transcription.text  # Fallback to raw Whisper Chinese
+        # All non-English: swap to English translation for the rest of the pipeline
+        if transcription.translated_text:
+            transcription.text = transcription.translated_text
 
     # Process lip frames if provided
     lip_reading_text: Optional[str] = None
@@ -113,6 +133,8 @@ async def decode(user_id: str, request: DecodeRequest) -> DecodeResult:
         "feedback_status": "pending",
         "corrected_text": None,
         "created_at": datetime.utcnow().isoformat(),
+        "detected_language": detected_language,
+        "chinese_text": chinese_text,
     }
     try:
         await file_manager.save_decode_history_entry(user_id, history_entry)
@@ -131,4 +153,6 @@ async def decode(user_id: str, request: DecodeRequest) -> DecodeResult:
         },
         lip_matches=lip_matches,
         processing_time_ms=processing_time_ms,
+        detected_language=detected_language,
+        chinese_text=chinese_text,
     )

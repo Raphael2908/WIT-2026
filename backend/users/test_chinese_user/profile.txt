@@ -1,0 +1,16 @@
+user_id: test_chinese_user
+display_name: ''
+vision_impairment_hint: null
+speech_impairment_hint: null
+category: adaptive_speech_decoding
+confidence: 0.0
+calibration_count: 0
+avg_whisper_confidence: 0.0
+phoneme_patterns: {}
+common_substitutions: {}
+modality_weights:
+  audio: 0.7
+  lip: 0.8
+confidence_threshold: 0.7
+created_at: '2026-02-11T08:58:54.178643'
+updated_at: '2026-02-11T08:58:54.178643'
