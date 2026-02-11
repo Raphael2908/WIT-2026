@@ -2,7 +2,7 @@
 
 Multimodal speech accessibility app that decodes impaired speech using Whisper ASR, lip reading (MediaPipe), and Claude LLM fusion — personalized per user, improving over time without model retraining.
 
-<!-- Add a demo screenshot: ![App Screenshot](assets/demo-screenshot.png) -->
+![App Screenshot](assets/home.png)
 
 ## Overview
 
