@@ -1,0 +1,14 @@
+[
+  {
+    "decode_id": "83208180-f0fa-4af0-a808-1e22d06aae09",
+    "decoded_text": "\u4f60\u597d,\u6211\u9700\u8981\u5e6b\u52a9\u3002",
+    "raw_whisper": "\u4f60\u597d,\u6211\u9700\u8981\u5e6b\u52a9\u3002",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T09:23:06.690587",
+    "detected_language": "chinese",
+    "chinese_text": "\u4f60\u597d,\u6211\u9700\u8981\u5e2e\u52a9\u3002"
+  }
+]

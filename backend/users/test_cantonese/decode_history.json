@@ -1,0 +1,14 @@
+[
+  {
+    "decode_id": "933c6c5f-5860-4f26-a2db-71e7e38bb16a",
+    "decoded_text": "Can you help me?",
+    "raw_whisper": "Can you help me?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T09:36:22.754255",
+    "detected_language": "chinese",
+    "chinese_text": "\"\u4f60\u53ef\u4ee5\u5e2e\u5e2e\u5fd9\u5417\uff1f\""
+  }
+]

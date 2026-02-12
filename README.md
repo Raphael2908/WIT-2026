@@ -4,7 +4,6 @@ Multimodal speech accessibility app that decodes impaired speech using Whisper A
 
 <img src="assets/home.png" width="300" alt="App Screenshot" />
 
-
 ## Overview
 
 Standard speech-to-text fails on impaired speech. A user with dysarthria says "I want to go home" but Whisper hears "I wah go ho." Speech Decoder fixes this by combining three signals:
@@ -18,6 +17,27 @@ The system builds a personal error profile during calibration and grows it with 
 **Built for** people with speech impairments (dysarthria, stuttering, apraxia, ALS, cerebral palsy, stroke recovery, vocal cord paralysis) — with accessibility adaptations for users who also have vision impairments.
 
 ## Architecture
+
+```mermaid
+sequenceDiagram
+    actor U as User
+    participant M as Mobile App
+    participant B as Backend
+    participant W as OpenAI Whisper
+    participant C as Claude AI
+
+    U->>M: Taps record & speaks
+    M->>B: Audio (base64 WAV)
+
+    B->>W: Transcribe speech
+    W-->>B: Raw transcription
+
+    B->>C: Correct using learned speech patterns
+    C-->>B: Corrected text
+
+    B-->>M: Corrected text
+    M-->>U: Shows text & plays audio
+```
 
 ```
 ┌──────────────────────────┐                        ┌──────────────────────────┐
@@ -51,6 +71,14 @@ The system builds a personal error profile during calibration and grows it with 
 | Audio processing | pydub, numpy, opencv-python |
 | Lip processing | MediaPipe (backend), rule-based shape classification |
 | Storage | Local file-based (user profiles + error mappings) |
+
+## Features
+
+- **Personalized speech decoding** — calibration session learns individual speech patterns and applies corrections in real time
+- **Multilingual support** — automatic language detection across supported languages
+- **Lip-reading fusion** — combines audio transcription with visual lip-reading data for higher accuracy
+- **Calibration learning loop** — users can correct outputs, and the system learns from each correction
+- **Accessibility modes** — vision impairment support with large text, high contrast, and TTS audio output
 
 ## How It Works
 

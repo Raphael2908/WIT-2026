@@ -1,0 +1,14 @@
+[
+  {
+    "decode_id": "9da492e4-9cff-42e5-a471-d02faa4fd01a",
+    "decoded_text": "I need help.",
+    "raw_whisper": "I need help.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T09:23:14.787349",
+    "detected_language": "malay",
+    "chinese_text": null
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "decode_id": "4772d9f9-8cca-4fdf-b620-d927f5c08893",
+    "decoded_text": "Hello, I need help.",
+    "raw_whisper": "Hello, I need help.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T09:36:08.104119",
+    "detected_language": "chinese",
+    "chinese_text": "\u4f60\u597d,\u6211\u662f\u8981\u5e2e\u52a9"
+  },
+  {
+    "decode_id": "dc895369-193e-4b40-8ab3-2254d0271f0d",
+    "decoded_text": "Hello, I need help.",
+    "raw_whisper": "Hello, I need help.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T09:50:06.869638",
+    "detected_language": "chinese",
+    "chinese_text": "\u4f60\u597d,\u6211\u662f\u8981\u5e2e\u52a9"
+  }
+]

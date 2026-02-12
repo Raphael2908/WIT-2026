@@ -1,0 +1,38 @@
+[
+  {
+    "decode_id": "037d0d65-0bc2-4f7a-967a-ecbbd3e0d9a2",
+    "decoded_text": "\u30d0\u30e9\u306f\u3001\u82b1\u304c\u3044\u3044\u3002",
+    "raw_whisper": "\u3070\u3089\u306f\u3001\u306f\u304c\u3044\u306b\u3002",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T09:36:48.737130",
+    "detected_language": "en",
+    "chinese_text": null
+  },
+  {
+    "decode_id": "6ad4be77-d6ab-4c28-aa0c-1ea32fba007d",
+    "decoded_text": "\u30d0\u30e9\u306f\u3001\u82b1\u304c\u3044\u3044\u3002",
+    "raw_whisper": "\u3070\u3089\u306f\u3001\u306f\u304c\u3044\u306b\u3002",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T09:50:19.419354",
+    "detected_language": "en",
+    "chinese_text": null
+  },
+  {
+    "decode_id": "c38e57db-c152-4f88-93fc-2591e7c7be90",
+    "decoded_text": "Selamat Tengahari!",
+    "raw_whisper": "Selamat Tengah!",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T09:56:39.910957",
+    "detected_language": "malay",
+    "chinese_text": null
+  }
+]

@@ -14,7 +14,7 @@ from app.models.request_model import DecodeResult, LipFrame, LipMatch, LipSignat
 from app.services.claude_service import ClaudeService
 from app.services.fusion_service import FusionService
 from app.services.lip_matching_service import frames_to_shape_sequence, find_top_lip_matches
-from app.services.whisper_service import WhisperService
+from app.services.whisper_service import MANDARIN_CODES, NON_ENGLISH_CODES, WhisperService
 from app.storage.file_storage import FileManager
 
 logger = logging.getLogger(__name__)
@@ -83,16 +83,31 @@ async def decode_stream(websocket: WebSocket, user_id: str):
                 # Concatenate audio chunks (all are base64)
                 combined_audio = "".join(audio_chunks)
 
-                # Transcribe with Whisper
+                # Transcribe with Whisper (auto-detect language)
                 try:
                     transcription = await whisper_service.transcribe_base64_audio(
                         base64_audio=combined_audio,
+                        auto_detect=True,
                     )
                 except Exception as e:
                     await websocket.send_json({"type": "error", "message": f"Transcription failed: {e}"})
                     audio_chunks.clear()
                     lip_frames.clear()
                     continue
+
+                # Handle non-English detection: preserve Chinese text for Mandarin, use English for pipeline
+                detected_language = transcription.language if transcription.language in NON_ENGLISH_CODES else "en"
+                chinese_text: Optional[str] = None
+                if detected_language in NON_ENGLISH_CODES:
+                    if detected_language in MANDARIN_CODES:
+                        # Correct raw Chinese transcription with Claude
+                        try:
+                            chinese_text = await claude_service.correct_chinese_text(transcription.text)
+                        except Exception:
+                            chinese_text = transcription.text  # Fallback to raw Whisper Chinese
+                    # All non-English: swap to English translation for the rest of the pipeline
+                    if transcription.translated_text:
+                        transcription.text = transcription.translated_text
 
                 # Process lip frames
                 lip_reading_text: Optional[str] = None
@@ -148,6 +163,8 @@ async def decode_stream(websocket: WebSocket, user_id: str):
                     },
                     lip_matches=lip_matches,
                     processing_time_ms=processing_time_ms,
+                    detected_language=detected_language,
+                    chinese_text=chinese_text,
                 )
 
                 # Save to decode history
@@ -160,6 +177,8 @@ async def decode_stream(websocket: WebSocket, user_id: str):
                     "feedback_status": "pending",
                     "corrected_text": None,
                     "created_at": datetime.utcnow().isoformat(),
+                    "detected_language": detected_language,
+                    "chinese_text": chinese_text,
                 }
                 try:
                     await file_manager.save_decode_history_entry(user_id, history_entry)

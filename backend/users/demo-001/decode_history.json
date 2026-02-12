@@ -248,5 +248,77 @@
     "feedback_status": "pending",
     "corrected_text": null,
     "created_at": "2026-02-10T22:05:19.463446"
+  },
+  {
+    "decode_id": "9115ad4c-80c7-43fe-b409-e1a3b2b8d11f",
+    "decoded_text": "No.",
+    "raw_whisper": "Hello.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T10:17:45.812840",
+    "detected_language": "en",
+    "chinese_text": null
+  },
+  {
+    "decode_id": "097d376a-3ecf-484c-8ca0-8a360809e290",
+    "decoded_text": "Ni hao.",
+    "raw_whisper": "Ni hao.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T10:17:59.362112",
+    "detected_language": "chinese",
+    "chinese_text": "\u4f60\u597d"
+  },
+  {
+    "decode_id": "4c3ba47a-3ed1-4968-886e-95a34a643bcc",
+    "decoded_text": "\u6211\u8981\u5403\u9e21\u86cb\u3002",
+    "raw_whisper": "\u6211\u8981\u5403\u9e21\u86cb\u3002",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "confirmed",
+    "corrected_text": null,
+    "created_at": "2026-02-11T10:19:13.068948",
+    "detected_language": "chinese",
+    "chinese_text": "\u6211\u8981\u5403\u9e21\u86cb"
+  },
+  {
+    "decode_id": "35e473be-f979-4186-8dab-76abaffe16f5",
+    "decoded_text": "\u4f60\u77e5\u9053\u5395\u6240\u5728\u54ea\u91cc\u5417?",
+    "raw_whisper": "\u4f60\u77e5\u9053\u5395\u6240\u5728\u54ea\u91cc\u5417?",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T10:19:41.034570",
+    "detected_language": "chinese",
+    "chinese_text": "\u4f60\u77e5\u9053\u5395\u6240\u5728\u54ea\u91cc\u5417?"
+  },
+  {
+    "decode_id": "fe7f5c4f-5c5a-49ef-9547-6abea3f7093c",
+    "decoded_text": "Please tell me I don't have my medication.",
+    "raw_whisper": "Please tell me I don't have my medication.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T10:28:16.238264",
+    "detected_language": "en",
+    "chinese_text": null
+  },
+  {
+    "decode_id": "0242e361-c149-4aa5-b839-f6827f94c798",
+    "decoded_text": "Please help me, I don't have my medication.",
+    "raw_whisper": "Please help me, I don't have my medication.",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T10:28:57.648294",
+    "detected_language": "en",
+    "chinese_text": null
   }
 ]

@@ -76,3 +76,24 @@ Respond with a JSON object:
     "patterns_learned": 0-N,
     "analysis": "Brief explanation of what was learned"
 }}"""
+
+CHINESE_CORRECTION_PROMPT = """You are correcting a Mandarin Chinese transcription produced by speech recognition.
+
+The transcription may contain:
+- Traditional Chinese characters that should be Simplified Chinese
+- Wrong homophones (e.g., 的/得/地 confusion, 在/再 confusion)
+- Missing or extra characters due to speech impairment
+- Mixed punctuation (English periods vs Chinese 。)
+
+Raw transcription:
+"{raw_chinese}"
+
+Your task:
+1. Convert any Traditional Chinese characters to Simplified Chinese
+2. Fix wrong homophones based on context
+3. Normalize punctuation to Chinese standard (。，！？)
+4. Do NOT translate to English — output must remain in Simplified Chinese
+5. Do NOT add content the speaker did not say
+6. If the text is already correct, return it unchanged
+
+Return ONLY the corrected Simplified Chinese text, nothing else."""

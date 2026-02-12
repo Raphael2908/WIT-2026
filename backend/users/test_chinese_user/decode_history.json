@@ -1,0 +1,14 @@
+[
+  {
+    "decode_id": "90f1ea2a-d13e-4c57-96d9-e54df9bca253",
+    "decoded_text": "Hello! I need help!",
+    "raw_whisper": "Hello! I need help!",
+    "whisper_confidence": 0.85,
+    "lip_used": false,
+    "feedback_status": "pending",
+    "corrected_text": null,
+    "created_at": "2026-02-11T08:59:01.435382",
+    "detected_language": "chinese",
+    "chinese_text": "\u4f60\u597d,\u6211\u9700\u8981\u5e2e\u52a9\u3002"
+  }
+]
