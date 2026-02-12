@@ -135,9 +135,11 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
         throw new Error("Recording URI is null");
       }
 
-      // Reset audio mode
+      // Reset audio mode — explicitly preserve playsInSilentModeIOS so
+      // subsequent TTS plays through the main loudspeaker, not the earpiece.
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
       });
 
       // Log raw audio data

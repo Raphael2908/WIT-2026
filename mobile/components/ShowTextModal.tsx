@@ -6,8 +6,8 @@ import {
   Pressable,
   StyleSheet,
 } from "react-native";
-import * as Speech from "expo-speech";
 import { Ionicons } from "@expo/vector-icons";
+import { speakTextAsync } from "../services/tts";
 import { COLORS, RADII } from "../utils/theme";
 
 interface ShowTextModalProps {
@@ -22,7 +22,7 @@ export default function ShowTextModal({
   onClose,
 }: ShowTextModalProps) {
   const handleSpeak = () => {
-    Speech.speak(text);
+    void speakTextAsync(text);
   };
 
   return (

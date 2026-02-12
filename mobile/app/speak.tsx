@@ -10,10 +10,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import * as Speech from "expo-speech";
 import { useUser } from "../hooks/useUser";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
 import { api } from "../services/api";
+import { speakTextAsync } from "../services/tts";
 import {
   getSavedPhrases,
   savePhrases,
@@ -105,7 +105,7 @@ export default function SpeakScreen() {
     setLastResult(null);
     setFeedbackVisible(false);
 
-    Speech.speak(text);
+    await speakTextAsync(text);
     await addRecentPhrase(text);
     setRecentPhrases((prev) => [text, ...prev.filter((p) => p !== text)].slice(0, 20));
   }, []);

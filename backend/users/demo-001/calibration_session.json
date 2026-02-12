@@ -1,0 +1,47 @@
+[
+  {
+    "phrase_id": "p01",
+    "phrase_text": "The quick brown fox jumps over the lazy dog",
+    "whisper_output": "The quick brown fox jumps over the lazy dog",
+    "confidence": 1.0,
+    "match": true,
+    "error_mapping_created": false,
+    "shape_sequence": null
+  },
+  {
+    "phrase_id": "p01",
+    "phrase_text": "The quick brown fox jumps over the lazy dog",
+    "whisper_output": "The quick brown fox jumps over the lazy dog",
+    "confidence": 1.0,
+    "match": true,
+    "error_mapping_created": false,
+    "shape_sequence": null
+  },
+  {
+    "phrase_id": "p01",
+    "phrase_text": "The quick brown fox jumps over the lazy dog",
+    "whisper_output": "Your balls",
+    "confidence": 0.0,
+    "match": false,
+    "error_mapping_created": true,
+    "shape_sequence": null
+  },
+  {
+    "phrase_id": "p01",
+    "phrase_text": "The quick brown fox jumps over the lazy dog",
+    "whisper_output": "The quick brown fox jumps over the lazy dog",
+    "confidence": 1.0,
+    "match": true,
+    "error_mapping_created": false,
+    "shape_sequence": null
+  },
+  {
+    "phrase_id": "p01",
+    "phrase_text": "The quick brown fox jumps over the lazy dog",
+    "whisper_output": "Fuck you",
+    "confidence": 0.0,
+    "match": false,
+    "error_mapping_created": true,
+    "shape_sequence": null
+  }
+]
